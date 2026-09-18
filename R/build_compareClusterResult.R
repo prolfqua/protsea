@@ -9,7 +9,6 @@
 #'   one per contrast. Names are used as cluster labels.
 #' @return A [DOSE::compareClusterResult-class] object.
 #' @importFrom methods new slot
-#' @importClassesFrom DOSE compareClusterResult
 #' @export
 #' @examples
 #' \dontrun{
