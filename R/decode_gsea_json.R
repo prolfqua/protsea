@@ -39,9 +39,17 @@ restore_gsea_result <- function(native, gene_pool, rank_list) {
   gene_sets <- lapply(native$gene_sets, function(x) as.character(unlist(x, use.names = FALSE)))
   symbols <- unlist(native$gene2symbol, use.names = TRUE)
   if (!length(symbols)) symbols <- character()
+  params <- lapply(names(native$params), function(name) {
+    value <- unlist(native$params[[name]], use.names = TRUE)
+    if (!is.null(native$param_types[[name]])) {
+      return(methods::as(value, native$param_types[[name]]))
+    }
+    value
+  })
+  names(params) <- names(native$params)
   methods::new(
     "gseaResult", result = result, geneList = ranks, geneSets = gene_sets,
-    params = lapply(native$params, function(x) unlist(x, use.names = TRUE)),
+    params = params,
     organism = native$organism, setType = native$set_type, keytype = native$key_type,
     readable = native$readable, gene2Symbol = symbols,
     permScores = matrix(nrow = 0, ncol = 0)

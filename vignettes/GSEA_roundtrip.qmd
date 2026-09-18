@@ -1,0 +1,140 @@
+---
+title: "clusterProfiler GSEA JSON round trip"
+subtitle: "Run with fgsea, serialize with protsea, reconstruct, and plot"
+format: html
+vignette: >
+  %\VignetteIndexEntry{clusterProfiler GSEA JSON round trip}
+  %\VignetteEngine{quarto::html}
+  %\VignetteEncoding{UTF-8}
+---
+
+This article demonstrates the complete native GSEA exchange path. We run a pre-ranked analysis with `clusterProfiler::GSEA()` and its fgsea backend, serialize the resulting `gseaResult` with protsea, reconstruct it from JSON, verify the preserved data, and create clusterProfiler/enrichplot figures from the reconstructed object. Reconstruction does not rerun enrichment or permutation testing.
+
+## Prepare a ranked list and gene sets
+
+The example is deterministic and self-contained. The ranking contains 120 proteins. Two pathways occupy opposite ends of the ranking, while a third contains proteins from both ends.
+
+```{r}
+#| label: prepare-input
+#| echo: true
+protein_ids <- sprintf("protein_%03d", seq_len(120))
+ranked_scores <- seq(4, -4, length.out = length(protein_ids))
+names(ranked_scores) <- protein_ids
+
+term2gene <- data.frame(
+  term = rep(c("TOP_PATHWAY", "BOTTOM_PATHWAY", "BOTH_ENDS"), each = 16),
+  gene = c(
+    protein_ids[1:16],
+    protein_ids[105:120],
+    protein_ids[c(1:8, 113:120)]
+  )
+)
+
+term2name <- data.frame(
+  term = c("TOP_PATHWAY", "BOTTOM_PATHWAY", "BOTH_ENDS"),
+  name = c("Proteins at the top", "Proteins at the bottom", "Proteins at both ends")
+)
+```
+
+## Run clusterProfiler with fgsea
+
+`by = "fgsea"` selects the fgsea backend. The non-default exponent is useful here because the round trip must retain the weighting parameter used to reconstruct the running enrichment score.
+
+```{r}
+#| label: run-gsea
+#| echo: true
+set.seed(42)
+native <- clusterProfiler::GSEA(
+  geneList = ranked_scores,
+  exponent = 1.25,
+  minGSSize = 5,
+  maxGSSize = 30,
+  pvalueCutoff = 1,
+  TERM2GENE = term2gene,
+  TERM2NAME = term2name,
+  by = "fgsea",
+  seed = TRUE,
+  verbose = FALSE
+)
+
+native@result[, c("ID", "Description", "enrichmentScore", "NES", "p.adjust")]
+```
+
+## Serialize and deserialize
+
+`gsea_result_data()` creates the shared R representation. `write_gsea_result_json()` writes it as JSON for file exchange. The same JSON text can be stored directly in a MuData `uns` entry and passed to `decode_gsea_json()` without an intermediate file.
+
+```{r}
+#| label: serialize
+#| echo: true
+document <- protsea::gsea_result_data(
+  results = list(treatment_vs_control = native),
+  category = "Example pathways",
+  method = "fgsea"
+)
+
+json_path <- tempfile(fileext = ".json")
+protsea::write_gsea_result_json(document, json_path)
+json_text <- paste(readLines(json_path, warn = FALSE), collapse = "\n")
+
+restored <- protsea::decode_gsea_json(json_text)[["treatment_vs_control"]][["Example pathways"]]
+
+data.frame(
+  Property = c("Result table", "Ranked list", "Gene sets", "GSEA parameters"),
+  Equivalent = c(
+    isTRUE(all.equal(restored@result, native@result)),
+    isTRUE(all.equal(restored@geneList, native@geneList)),
+    isTRUE(all.equal(restored@geneSets, native@geneSets)),
+    isTRUE(all.equal(restored@params, native@params))
+  )
+)
+```
+
+The JSON retains the complete typed result table, ordered ranking, complete gene sets, leading-edge identifiers, and the actual analysis parameters with their R storage types. This is enough for enrichplot to derive hit positions and running-score curves from the reconstructed object.
+
+## Plot the reconstructed result
+
+The following plots use `restored`, not the original `native` object.
+
+```{r}
+#| label: fig-dotplot
+#| fig-cap: "Normalized enrichment scores and adjusted p-values reconstructed from JSON."
+#| echo: true
+enrichplot::dotplot(restored, showCategory = 3) +
+  ggplot2::ggtitle("Reconstructed GSEA result")
+```
+
+```{r}
+#| label: fig-ridgeplot
+#| fig-cap: "Rank-score distributions for the reconstructed pathway memberships."
+#| echo: true
+enrichplot::ridgeplot(restored, showCategory = 3) +
+  ggplot2::ggtitle("Rank distributions after JSON round trip")
+```
+
+```{r}
+#| label: fig-running-score
+#| fig-cap: "Running enrichment scores reconstructed from the retained ranking, gene sets, and exponent."
+#| fig-width: 10
+#| echo: true
+enrichplot::gseaplot2(
+  restored,
+  geneSetID = c("TOP_PATHWAY", "BOTTOM_PATHWAY"),
+  title = "Running enrichment scores after JSON round trip",
+  pvalue_table = TRUE
+)
+```
+
+## What the JSON round trip supports
+
+The native extension supports report reconstruction from clusterProfiler/fgsea results. It retains ES, NES, raw and adjusted p-values, q-values, result-table types, full gene-set membership, leading edges, exact rank order including ties, and the weighting exponent. Permutation matrices are deliberately omitted because this format supports result exchange and plotting rather than resuming permutation calculations.
+
+STRING documents without the native extension remain readable through `read_gsea_json()`. STRING does not report a clusterProfiler NES or raw p-value, so protsea does not manufacture those values. MEA documents retain their available summary data; a native running-score curve requires the backend's complete ranking and scoring parameters.
+
+## Session information
+
+```{r}
+#| label: session-info
+#| echo: false
+sessionInfo()
+```

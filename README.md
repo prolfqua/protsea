@@ -27,7 +27,7 @@ For clusterProfiler results, each category additionally contains `gsea_result`:
 |---|---|
 | `result.columns`, `result.types`, `result.row_names` | Original result table, including ES, NES, raw p-value, adjusted p-value, q-value, leading edge and any backend-specific columns; empty columns retain their types. |
 | `gene_sets` | Complete original gene sets, including members absent from the ranking. |
-| `params` | Original analysis parameters, including the actual weighting exponent. |
+| `params`, `param_types` | Original analysis parameters and their R storage types, including the actual weighting exponent. |
 | `organism`, `set_type`, `key_type`, `readable`, `gene2symbol` | Identifier and collection metadata required by the reconstructed object. |
 
 Every ranked input is in the pool. Its integer `rank` determines the exact original order, including ties; `input_label` addresses the original identifier in `rank_lists.entries`. Object-key ordering and display labels are never used to determine the native ranking. PTM-specific canonical pool identifiers may differ from `input_label` without losing the submitted identifiers.

@@ -23,6 +23,7 @@ test_that("native GSEA statistics and running scores survive JSON", {
   expect_equal(restored@geneList, original@geneList)
   expect_equal(restored@geneSets, original@geneSets)
   expect_equal(restored@params, original@params)
+  expect_identical(restored@params, original@params)
   gs_info <- utils::getFromNamespace("gsInfo", "enrichplot")
   for (id in original@result$ID) {
     expect_equal(gs_info(restored, id), gs_info(original, id))

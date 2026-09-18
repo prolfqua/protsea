@@ -3,8 +3,12 @@ vignettes/plots/
 vignettes/GSEA_report.html
 vignettes/GSEA_report_files/
 docs
+_quarto/
+altdoc/freeze.rds
 
 doc/
 Meta/
 *.Rcheck/
 .Rhistory
+/doc/
+/Meta/

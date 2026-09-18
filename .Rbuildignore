@@ -11,6 +11,9 @@
 ^doc$
 ^Meta$
 ^\.git$
+^\.github$
 ^\.gitignore$
 ^AGENTS\.md$
 ^CLAUDE\.md$
+^altdoc$
+^_quarto$

@@ -48,6 +48,7 @@ gsea_result_data <- function(results, category, method = "fgsea") {
                     row_names = as.list(rownames(res@result)),
                     row_name_type = typeof(attr(res@result, "row.names"))),
       gene_sets = lapply(res@geneSets, as.list), params = res@params,
+      param_types = as.list(vapply(res@params, typeof, character(1))),
       organism = res@organism, set_type = res@setType, key_type = res@keytype,
       readable = res@readable, gene2symbol = as.list(res@gene2Symbol)
     )
