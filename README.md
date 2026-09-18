@@ -1,5 +1,7 @@
 # protsea
 
+[Documentation and vignette](https://prolfqua.github.io/protsea/)
+
 Shared enrichment JSON and clusterProfiler plotting conversions, extracted from `stringdbpy/stringGSEAplot` (source commit `7032a69`). Install with `make install`; run tests with `make test`. Report QMD sources live in `vignettes/` and are built and installed with the package.
 
 ## Native GSEA round trip
