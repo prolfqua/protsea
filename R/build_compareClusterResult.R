@@ -34,7 +34,7 @@ build_compareClusterResult <- function(result_list) {
   gene_clusters <- lapply(result_list, function(er) methods::slot(er, "gene"))
 
   methods::new(
-    "compareClusterResult",
+    methods::getClass("compareClusterResult", where = asNamespace("DOSE")),
     compareClusterResult = merged,
     geneClusters = gene_clusters,
     fun = "stringGSEA",

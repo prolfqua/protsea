@@ -23,8 +23,8 @@ resolve_gene_ids <- function(gene_ids, gene_pool) {
 #' @param rank_list Named list from rank_lists for this contrast
 #'   (has fields: contrast, entries).
 #' @return An [DOSE::enrichResult-class] object.
+#' @import DOSE
 #' @importFrom methods new
-#' @importClassesFrom DOSE enrichResult
 #' @export
 build_enrichResult <- function(category_data, gene_pool, rank_list) {
   terms <- category_data[["terms"]]
@@ -76,7 +76,7 @@ build_enrichResult <- function(category_data, gene_pool, rank_list) {
   universe <- names(rank_list[["entries"]])
 
   methods::new(
-    "enrichResult",
+    methods::getClass("enrichResult", where = asNamespace("DOSE")),
     result = result_df,
     pvalueCutoff = 1.0,
     pAdjustMethod = "BH",

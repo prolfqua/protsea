@@ -12,7 +12,6 @@
 #' @param rank_list Named list from rank_lists for this contrast.
 #' @return A [DOSE::gseaResult-class] object.
 #' @importFrom methods new
-#' @importClassesFrom DOSE gseaResult
 #' @export
 build_gseaResult <- function(category_data, gene_pool, rank_list) {
   if (!is.null(category_data$gsea_result)) {
@@ -65,7 +64,7 @@ build_gseaResult <- function(category_data, gene_pool, rank_list) {
   names(gene_sets) <- vapply(terms, function(t) t[["term_id"]], character(1))
 
   methods::new(
-    "gseaResult",
+    methods::getClass("gseaResult", where = asNamespace("DOSE")),
     result      = result_df,
     organism    = "unknown",
     setType     = category_data[["category"]],

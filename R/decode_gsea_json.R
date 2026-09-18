@@ -48,7 +48,8 @@ restore_gsea_result <- function(native, gene_pool, rank_list) {
   })
   names(params) <- names(native$params)
   methods::new(
-    "gseaResult", result = result, geneList = ranks, geneSets = gene_sets,
+    methods::getClass("gseaResult", where = asNamespace("DOSE")),
+    result = result, geneList = ranks, geneSets = gene_sets,
     params = params,
     organism = native$organism, setType = native$set_type, keytype = native$key_type,
     readable = native$readable, gene2Symbol = symbols,
