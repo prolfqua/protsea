@@ -127,9 +127,7 @@ enrichplot::gseaplot2(
 
 ## What the JSON round trip supports
 
-The native extension supports report reconstruction from clusterProfiler/fgsea results. It retains ES, NES, raw and adjusted p-values, q-values, result-table types, full gene-set membership, leading edges, exact rank order including ties, and the weighting exponent. Permutation matrices are deliberately omitted because this format supports result exchange and plotting rather than resuming permutation calculations.
-
-STRING documents without the native extension remain readable through `read_gsea_json()`. STRING does not report a clusterProfiler NES or raw p-value, so protsea does not manufacture those values. MEA documents retain their available summary data; a native running-score curve requires the backend's complete ranking and scoring parameters.
+The native round trip retains ES, NES, raw and adjusted p-values, q-values, result-table types, full gene-set membership, leading edges, exact rank order including ties, and the weighting exponent. Permutation matrices are deliberately omitted because this format supports result exchange and plotting rather than resuming permutation calculations.
 
 ## Session information
 
