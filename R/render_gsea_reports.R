@@ -1,12 +1,10 @@
 # Quarto rendering of a completed STRING-GSEA result directory.
 #
-# The report sources live in `vignettes/` as plain `format: html` reports whose
-# FGCZ styling comes from a directory-level `_metadata.yml` and whose
+# The STRING report source is a runtime template under `inst/templates/`. Its
+# FGCZ styling comes from a directory-level `_metadata.yml` and its
 # Find/Download toolbar is wired via `include-after-body: fgcz-plot-finder.html`.
-# `data-raw/sync_quarto_assets.R` keeps those build-time assets synchronized with
-# `fgczQuartoTemplate`, and `vignettes/.install_extras` ships them together with
-# the qmd sources into the installed package's `doc/` directory. Both mechanisms
-# require the package to be installed from a tarball built WITH vignettes.
+# `data-raw/sync_quarto_assets.R` keeps vignette build-time assets synchronized
+# with `fgczQuartoTemplate`.
 #
 # Rendering does not use those installed copies: it calls
 # `fgczQuartoTemplate::fgcz_render()`, which stages the assets next to the qmd
@@ -54,7 +52,7 @@
 #' @param workunit_id B-Fabric workunit identifier, which names the result JSON
 #'   and is shown on the landing page.
 #' @param doc_dir Directory holding `GSEA_report.qmd`, normally
-#'   `system.file("doc", package = "protsea")`.
+#'   `system.file("templates", package = "protsea")`.
 #' @param templates_dir Directory holding `index.qmd`, normally
 #'   `system.file("templates", package = "protsea")`.
 #' @return Invisibly, the paths of the rendered HTML files.

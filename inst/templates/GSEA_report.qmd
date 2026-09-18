@@ -6,10 +6,6 @@ format:
 params:
   json_path: !expr system.file("extdata", "WU2848501_gsea_result.json.gz", package = "protsea")
   show_category: 20
-vignette: >
-  %\VignetteIndexEntry{STRING-GSEA Enrichment Report}
-  %\VignetteEngine{quarto::html}
-  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup}

@@ -14,7 +14,7 @@ JSON the report reads.}
 and is shown on the landing page.}
 
 \item{doc_dir}{Directory holding \code{GSEA_report.qmd}, normally
-\code{system.file("doc", package = "protsea")}.}
+\code{system.file("templates", package = "protsea")}.}
 
 \item{templates_dir}{Directory holding \code{index.qmd}, normally
 \code{system.file("templates", package = "protsea")}.}
