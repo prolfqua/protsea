@@ -1,6 +1,6 @@
 get_test_json <- function() {
   system.file("extdata", "WU2848501_gsea_result.json.gz",
-              package = "stringGSEAplot")
+              package = "protsea")
 }
 
 test_that("read_gsea_json returns double-nested list of enrichResult", {

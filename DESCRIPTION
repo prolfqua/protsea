@@ -1,11 +1,11 @@
-Package: stringGSEAplot
-Title: Read STRING-GSEA JSON Results into enrichResult Objects
-Version: 0.0.1
+Package: protsea
+Title: Exchange and Visualize Proteomics Enrichment Results
+Version: 0.1.0
 Authors@R:
     person("Witold", "Wolski", , "wew@fgcz.ethz.ch", role = c("aut", "cre"))
-Description: Reads JSON files produced by the string-gsea Python pipeline
-    and constructs clusterProfiler enrichResult S4 objects for use with
-    enrichplot visualization functions.
+Description: Exchanges STRING and clusterProfiler enrichment results through
+    a shared JSON format. Preserves native GSEA statistics and ranked inputs
+    for reconstruction of enrichment plots and running-score curves.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -16,6 +16,10 @@ Imports:
     jsonlite,
     methods
 Suggests:
+    clusterProfiler,
+    devtools,
+    roxygen2,
+    rcmdcheck,
     DT,
     enrichplot,
     ggplot2,

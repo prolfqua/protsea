@@ -4,7 +4,7 @@ format:
   html:
     include-after-body: fgcz-plot-finder.html
 params:
-  json_path: !expr system.file("extdata", "WU2848501_gsea_result.json.gz", package = "stringGSEAplot")
+  json_path: !expr system.file("extdata", "WU2848501_gsea_result.json.gz", package = "protsea")
   show_category: 20
 vignette: >
   %\VignetteIndexEntry{STRING-GSEA Enrichment Report}
@@ -14,7 +14,7 @@ vignette: >
 
 ```{r setup}
 #| include: false
-library(stringGSEAplot)
+library(protsea)
 
 results <- read_gsea_json(params$json_path)
 contrast_names <- names(results)
@@ -86,7 +86,7 @@ if (!is.null(run_metadata)) {
 
 # Overview
 
-<img src="`r knitr::image_uri(system.file("report-assets", "string-gsea-enrichment.svg", package = "stringGSEAplot"))`" alt="Visual abstract: one ranked gene list per contrast is scored by the STRING-DB enrichment API across annotation categories, producing enriched term tables, per-category figures, and a cross-contrast comparison." style="width: 100%; max-height: 22rem; object-fit: contain;">
+<img src="`r knitr::image_uri(system.file("report-assets", "string-gsea-enrichment.svg", package = "protsea"))`" alt="Visual abstract: one ranked gene list per contrast is scored by the STRING-DB enrichment API across annotation categories, producing enriched term tables, per-category figures, and a cross-contrast comparison." style="width: 100%; max-height: 22rem; object-fit: contain;">
 
 Each contrast contributes one pre-ranked gene list, which STRING-DB scores against its annotation categories. The tabs follow that path: one tab per contrast holds the enriched terms of each category, **Cross-Contrast** compares the categories the contrasts share.
 
@@ -405,7 +405,7 @@ provenance <- c(
   `Caller identity` = if (is.null(run_metadata)) "" else as.character(run_metadata$caller_identity),
   `STRING API` = if (is.null(run_metadata)) "" else as.character(run_metadata$api_base_url),
   `Enrichment results` = basename(params$json_path),
-  `Report package` = paste("stringGSEAplot", utils::packageVersion("stringGSEAplot")),
+  `Report package` = paste("protsea", utils::packageVersion("protsea")),
   `Report created` = format(Sys.time(), "%Y-%m-%d %H:%M:%S %Z")
 )
 provenance <- provenance[nzchar(provenance)]

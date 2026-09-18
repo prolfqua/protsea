@@ -7,3 +7,10 @@
 ^docs$
 ^data-raw$
 ^_pkgdown\.yml$
+^make$
+^doc$
+^Meta$
+^\.git$
+^\.gitignore$
+^AGENTS\.md$
+^CLAUDE\.md$

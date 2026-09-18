@@ -3,3 +3,8 @@ vignettes/plots/
 vignettes/GSEA_report.html
 vignettes/GSEA_report_files/
 docs
+
+doc/
+Meta/
+*.Rcheck/
+.Rhistory

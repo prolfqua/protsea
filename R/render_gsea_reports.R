@@ -54,9 +54,9 @@
 #' @param workunit_id B-Fabric workunit identifier, which names the result JSON
 #'   and is shown on the landing page.
 #' @param doc_dir Directory holding `GSEA_report.qmd`, normally
-#'   `system.file("doc", package = "stringGSEAplot")`.
+#'   `system.file("doc", package = "protsea")`.
 #' @param templates_dir Directory holding `index.qmd`, normally
-#'   `system.file("templates", package = "stringGSEAplot")`.
+#'   `system.file("templates", package = "protsea")`.
 #' @return Invisibly, the paths of the rendered HTML files.
 #' @export
 render_gsea_reports <- function(output_dir, workunit_id, doc_dir, templates_dir) {

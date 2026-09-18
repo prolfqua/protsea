@@ -19,7 +19,7 @@ read_gsea_json <- function(json_path) {
   json_data <- jsonlite::fromJSON(json_path, simplifyVector = FALSE)
 
   # Validate required top-level keys
-  required_keys <- c("data", "rank_lists", "metadata", "links")
+  required_keys <- c("data", "rank_lists")
   missing <- setdiff(required_keys, names(json_data))
   if (length(missing) > 0) {
     stop(

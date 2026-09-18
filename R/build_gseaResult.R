@@ -1,7 +1,9 @@
 #' Build a gseaResult S4 object from one category's JSON data
 #'
 #' Constructs a [DOSE::gseaResult-class] suitable for `enrichplot::ridgeplot()`
-#' and other GSEA-specific visualisations.  The ranked gene list is taken from
+#' and other GSEA-specific visualisations. Native `gsea_result` extensions
+#' restore the original statistics. STRING-only results have missing ES/NES
+#' and p-values; their ridgeplot is a descriptive view of mapped members.  The ranked gene list is taken from
 #' the `input_value` field of `gene_pool`; term genes become `core_enrichment`.
 #'
 #' @param category_data List from JSON for one category (fields: category,
@@ -13,6 +15,9 @@
 #' @importClassesFrom DOSE gseaResult
 #' @export
 build_gseaResult <- function(category_data, gene_pool, rank_list) {
+  if (!is.null(category_data$gsea_result)) {
+    return(restore_gsea_result(category_data$gsea_result, gene_pool, rank_list))
+  }
   terms <- category_data[["terms"]]
   if (length(terms) == 0) {
     stop("No terms found in category '", category_data[["category"]], "'")
@@ -29,8 +34,8 @@ build_gseaResult <- function(category_data, gene_pool, rank_list) {
     fdr_val  <- as.numeric(term[["fdr"]])
     k        <- as.integer(term[["genes_mapped"]])
 
-    # Approximate NES from -log10(fdr); STRING does not export NES directly
-    nes <- -log10(max(fdr_val, 1e-10))
+    # STRING does not provide native GSEA ES/NES or unadjusted p-values.
+    nes <- NA_real_
 
     gene_ranks <- match(labels, names(gene_list))
     med_rank   <- as.integer(stats::median(gene_ranks[!is.na(gene_ranks)]))
@@ -41,9 +46,9 @@ build_gseaResult <- function(category_data, gene_pool, rank_list) {
       setSize          = k,
       enrichmentScore  = nes,
       NES              = nes,
-      pvalue           = fdr_val,
+      pvalue           = NA_real_,
       p.adjust         = fdr_val,
-      qvalues          = fdr_val,
+      qvalues          = NA_real_,
       rank             = med_rank,
       leading_edge     = paste0("tags=", k, ", list=", length(gene_list)),
       core_enrichment  = paste(labels, collapse = "/"),
