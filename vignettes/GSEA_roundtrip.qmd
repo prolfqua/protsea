@@ -120,8 +120,7 @@ enrichplot::ridgeplot(restored, showCategory = 3) +
 enrichplot::gseaplot2(
   restored,
   geneSetID = c("TOP_PATHWAY", "BOTTOM_PATHWAY"),
-  title = "Running enrichment scores after JSON round trip",
-  pvalue_table = TRUE
+  title = "Running enrichment scores after JSON round trip"
 )
 ```
 
