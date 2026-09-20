@@ -308,6 +308,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>Original analysis parameters and their R storage types, including the actual weighting exponent.</td>
 </tr>
 <tr class="even">
+<td><code>running_scores</code></td>
+<td>Per-term running enrichment-score vectors in ranked-list order.</td>
+</tr>
+<tr class="odd">
+<td><code>hit_indices</code></td>
+<td>Per-term one-based positions of gene-set members in the ranked list.</td>
+</tr>
+<tr class="even">
 <td><code>organism</code>, <code>set_type</code>, <code>key_type</code>, <code>readable</code>, <code>gene2symbol</code></td>
 <td>Identifier and collection metadata required by the reconstructed object.</td>
 </tr>
@@ -315,8 +323,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 <p>Every ranked input is in the pool. Its integer <code>rank</code> determines the exact original order, including ties; <code>input_label</code> addresses the original identifier in <code>rank_lists.entries</code>. Object-key ordering and display labels are never used to determine the native ranking. PTM-specific canonical pool identifiers may differ from <code>input_label</code> without losing the submitted identifiers.</p>
 <p>The original <code>enrichment_score</code> field keeps its existing producer-specific meaning: STRING’s score for STRING output and NES for native PTM/GSEA output. Exact native statistics are unambiguous in <code>gsea_result.result.columns.enrichmentScore</code>, <code>NES</code>, <code>pvalue</code>, and <code>p.adjust</code>. Consumers needing those statistics should decode that block instead of interpreting the legacy summary field.</p>
-<p>Reconstruction restores <code>gseaResult</code> without re-running enrichment. <code>enrichplot</code> computes running scores and hit positions from the retained ranks, gene sets and exponent. Permutation matrices are omitted; the exchange format supports reporting, not resuming permutation calculations. JSON uses full numeric precision and <code>null</code> for missing table values.</p>
-<p>STRING and MEA documents without a native block remain valid common documents. STRING does not provide native fgsea NES or raw p-values; its plotting adapter leaves those statistics missing. The STRING ridgeplot remains a descriptive view of mapped members, and <code>decode_gsea_json()</code> rejects documents without the native inputs rather than inventing them. MEA curve reconstruction is outside the native clusterProfiler codec until its backend inputs and parameters are captured.</p>
+<p>Reconstruction restores <code>gseaResult</code> without re-running enrichment. The common native block records source running scores and hit positions for direct comparison, while <code>enrichplot</code> can independently reproduce them from the retained ranks, gene sets and exponent. Permutation matrices are omitted; the exchange format supports reporting, not resuming permutation calculations. JSON uses full numeric precision and <code>null</code> for missing table values.</p>
+<p>STRING documents without a native block remain valid common documents. STRING does not provide native fgsea NES or raw p-values; its plotting adapter leaves those statistics missing. The STRING ridgeplot remains a descriptive view of mapped members, and <code>decode_gsea_json()</code> rejects documents without the native inputs rather than inventing them. Native MEA producers use the same block as fgsea producers and retain the exact GSEApy running scores and hit positions.</p>
 <p>The STRING report can be rendered from the installed package through <code>render_gsea_reports()</code>. PTM report templates remain in prophosqua.</p>
 
 

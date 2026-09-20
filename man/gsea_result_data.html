@@ -232,7 +232,7 @@ ul.task-list li input[type="checkbox"] {
 <h2 class="unnumbered anchored" data-anchor-id="convert-clusterprofiler-gsea-results-to-shared-json-data">Convert clusterProfiler GSEA Results to Shared JSON Data</h2>
 <section id="description" class="level3">
 <h3 class="anchored" data-anchor-id="description">Description</h3>
-<p>Extends the STRING <code>data</code> / <code>rank_lists</code> structure with a category-level <code>gsea_result</code> block containing native statistics, gene sets and parameters. The pool’s integer <code>rank</code> preserves input order, including tied scores. Identifiers are retained exactly as submitted; no biological ID mapping is performed. Permutation matrices are not stored.</p>
+<p>Extends the STRING <code>data</code> / <code>rank_lists</code> structure with a category-level <code>gsea_result</code> block containing native statistics, gene sets and parameters. The pool’s integer <code>rank</code> preserves input order, including tied scores. Every native block also stores the running enrichment score and one-based hit positions for each term. These fields have the same representation for every producer. Identifiers are retained exactly as submitted; no biological ID mapping is performed. Permutation matrices are not stored.</p>
 </section>
 <section id="usage" class="level3">
 <h3 class="anchored" data-anchor-id="usage">Usage</h3>
