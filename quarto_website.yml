@@ -5,6 +5,7 @@ project:
     - "*.md"
     - "man/*.qmd"
     - "vignettes/GSEA_roundtrip.qmd"
+    - "vignettes/PTM_enrichment.qmd"
 
 website:
   title: "$ALTDOC_PACKAGE_NAME"
@@ -26,6 +27,8 @@ website:
         contents:
           - text: clusterProfiler GSEA JSON round trip
             file: vignettes/GSEA_roundtrip.qmd
+          - text: PTM enrichment
+            file: vignettes/PTM_enrichment.qmd
       - section: $ALTDOC_MAN_BLOCK
       - text: News
         file: $ALTDOC_NEWS
