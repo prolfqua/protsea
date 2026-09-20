@@ -1,0 +1,975 @@
+---
+title: "PTM Enrichment"
+format:
+  html:
+    fig-dpi: 96
+    toc-location: left
+    grid:
+      sidebar-width: 300px
+    include-after-body: fgcz-plot-finder.html
+knitr:
+  opts_chunk:
+    fig.retina: 1
+params:
+  json_path: null
+  analysis_label: null
+  fdr_threshold: 0.1
+  top_terms: 10
+  running_terms: 1
+vignette: >
+  %\VignetteIndexEntry{PTM Enrichment}
+  %\VignetteEngine{quarto::format}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup}
+#| include: false
+required_packages <- c(
+  "clusterProfiler",
+  "dplyr",
+  "DT",
+  "enrichplot",
+  "fgczQuartoTemplate",
+  "ggplot2",
+  "ggridges",
+  "jsonlite",
+  "knitr",
+  "patchwork",
+  "protsea"
+)
+missing_packages <- required_packages[
+  !vapply(required_packages, requireNamespace, quietly = TRUE, FUN.VALUE = logical(1))
+]
+if (length(missing_packages)) {
+  stop(
+    "Missing package(s) required to render this report: ",
+    paste(missing_packages, collapse = ", "),
+    call. = FALSE
+  )
+}
+
+knitr::opts_chunk$set(
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  fig.width = 9,
+  fig.height = 5.2,
+  out.width = "92%",
+  fig.align = "center"
+)
+
+input_candidates <- c(
+  params$json_path,
+  system.file("extdata", "PTM_DPA_gsea_result.json.gz", package = "protsea"),
+  file.path("..", "inst", "extdata", "PTM_DPA_gsea_result.json.gz"),
+  file.path("inst", "extdata", "PTM_DPA_gsea_result.json.gz")
+)
+input_candidates <- input_candidates[
+  !is.na(input_candidates) & nzchar(input_candidates) & file.exists(input_candidates)
+]
+if (!length(input_candidates)) {
+  stop("PTM GSEA JSON input was not found.", call. = FALSE)
+}
+json_path <- normalizePath(input_candidates[[1L]], mustWork = TRUE)
+payload <- jsonlite::fromJSON(json_path, simplifyVector = FALSE)
+
+abstract_candidates <- c(
+  system.file("report-assets", "ptm-enrichment.svg", package = "protsea"),
+  file.path("..", "inst", "report-assets", "ptm-enrichment.svg"),
+  file.path("inst", "report-assets", "ptm-enrichment.svg")
+)
+abstract_candidates <- abstract_candidates[
+  nzchar(abstract_candidates) & file.exists(abstract_candidates)
+]
+if (!length(abstract_candidates)) {
+  stop("PTM enrichment visual abstract was not found.", call. = FALSE)
+}
+abstract_path <- normalizePath(abstract_candidates[[1L]], mustWork = TRUE)
+
+required_top_level <- c("data", "rank_lists")
+missing_top_level <- setdiff(required_top_level, names(payload))
+if (length(missing_top_level)) {
+  stop(
+    "PTM GSEA JSON is missing: ",
+    paste(missing_top_level, collapse = ", "),
+    call. = FALSE
+  )
+}
+
+category_names <- c(
+  PTMSEA = "PTM-SEA",
+  KinaseGSEA = "KinaseLib",
+  MEA = "MEA"
+)
+method_labels <- c(
+  PTMSEA = "PTM-SEA",
+  KinaseGSEA = "Kinase GSEA",
+  MEA = "MEA"
+)
+expected_categories <- unname(category_names)
+document_categories <- unique(unlist(lapply(
+  payload$data,
+  function(contrast) names(contrast$categories)
+)))
+missing_categories <- setdiff(expected_categories, document_categories)
+unexpected_categories <- setdiff(document_categories, expected_categories)
+if (length(missing_categories) || length(unexpected_categories)) {
+  stop(
+    "Expected exactly the PTM-SEA, KinaseLib, and MEA categories; missing: ",
+    paste(missing_categories, collapse = ", "),
+    "; unexpected: ",
+    paste(unexpected_categories, collapse = ", "),
+    call. = FALSE
+  )
+}
+
+decoded <- protsea::decode_gsea_json(json_path)
+analysis_label <- params$analysis_label
+if (is.null(analysis_label) || !length(analysis_label) || !nzchar(analysis_label)) {
+  analysis_label <- payload$metadata$analysis
+}
+if (is.null(analysis_label) || !length(analysis_label) || !nzchar(analysis_label)) {
+  analysis_label <- "PTM analysis"
+}
+analysis_label <- as.character(analysis_label[[1L]])
+
+fdr_threshold <- as.numeric(params$fdr_threshold)
+top_terms <- as.integer(params$top_terms)
+running_terms <- as.integer(params$running_terms)
+if (length(fdr_threshold) != 1L || !is.finite(fdr_threshold) ||
+    fdr_threshold <= 0 || fdr_threshold > 1) {
+  stop("fdr_threshold must be one number in (0, 1].", call. = FALSE)
+}
+if (length(top_terms) != 1L || is.na(top_terms) || top_terms < 1L) {
+  stop("top_terms must be one positive integer.", call. = FALSE)
+}
+if (length(running_terms) != 1L || is.na(running_terms) || running_terms < 1L) {
+  stop("running_terms must be one positive integer.", call. = FALSE)
+}
+
+empty_terms <- function() {
+  data.frame(
+    contrast = character(),
+    term = character(),
+    NES = numeric(),
+    FDR = numeric(),
+    direction = character(),
+    mapped_sites = integer(),
+    set_size = integer(),
+    leading_edge_sites = character(),
+    stringsAsFactors = FALSE
+  )
+}
+
+scalar_number <- function(value) {
+  if (is.null(value) || !length(value)) {
+    return(NA_real_)
+  }
+  as.numeric(unlist(value, use.names = FALSE)[[1L]])
+}
+
+term_table_from_payload <- function(category) {
+  tables <- lapply(names(payload$data), function(contrast_name) {
+    terms <- payload$data[[contrast_name]]$categories[[category]]$terms
+    if (!length(terms)) {
+      return(empty_terms())
+    }
+    do.call(rbind, lapply(terms, function(term) {
+      data.frame(
+        contrast = contrast_name,
+        term = as.character(term$description),
+        NES = scalar_number(term$enrichment_score),
+        FDR = scalar_number(term$fdr),
+        direction = as.character(term$direction),
+        mapped_sites = as.integer(scalar_number(term$genes_mapped)),
+        set_size = as.integer(scalar_number(term$genes_in_set)),
+        leading_edge_sites = paste(
+          as.character(unlist(term$leading_edge_ids, use.names = FALSE)),
+          collapse = ";"
+        ),
+        stringsAsFactors = FALSE
+      )
+    }))
+  })
+  dplyr::bind_rows(tables)
+}
+
+read_method_data <- function(method) {
+  category <- category_names[[method]]
+  native <- lapply(decoded, function(contrast) contrast[[category]])
+  list(
+    method = method,
+    label = method_labels[[method]],
+    category = category,
+    contrasts = names(payload$data),
+    table = term_table_from_payload(category),
+    native = native
+  )
+}
+
+enrichment <- stats::setNames(
+  lapply(names(method_labels), read_method_data),
+  names(method_labels)
+)
+
+summary_table <- function(data) {
+  dplyr::bind_rows(lapply(data$contrasts, function(contrast_name) {
+    current <- data$table[data$table$contrast == contrast_name, , drop = FALSE]
+    data.frame(
+      Contrast = gsub("_", " ", contrast_name, fixed = TRUE),
+      `Tested terms` = nrow(current),
+      `FDR-significant` = sum(current$FDR <= fdr_threshold, na.rm = TRUE),
+      `Positive NES` = sum(
+        current$FDR <= fdr_threshold & current$NES > 0,
+        na.rm = TRUE
+      ),
+      `Negative NES` = sum(
+        current$FDR <= fdr_threshold & current$NES < 0,
+        na.rm = TRUE
+      ),
+      check.names = FALSE
+    )
+  }))
+}
+
+summary_widget <- function(data) {
+  DT::datatable(
+    summary_table(data),
+    filter = "none",
+    rownames = FALSE,
+    class = "compact stripe",
+    options = list(pageLength = 10, scrollX = TRUE, dom = "t")
+  )
+}
+
+empty_plot <- function(label) {
+  ggplot2::ggplot() +
+    ggplot2::annotate("text", x = 0, y = 0, label = label) +
+    ggplot2::theme_void()
+}
+
+nonempty_native_results <- function(data) {
+  data$native[vapply(
+    data$native,
+    function(result) nrow(result@result) > 0L,
+    logical(1)
+  )]
+}
+
+combined_native_result <- function(data) {
+  usable <- nonempty_native_results(data)
+  if (!length(usable)) {
+    return(NULL)
+  }
+  if (length(usable) == 1L) {
+    return(usable[[1L]])
+  }
+  clusterProfiler::merge_result(usable)
+}
+
+dot_plot <- function(data) {
+  object <- combined_native_result(data)
+  if (is.null(object)) {
+    return(empty_plot("No enrichment terms are available."))
+  }
+  enrichplot::dotplot(object, showCategory = top_terms) +
+    ggplot2::theme(
+      axis.text.y = ggplot2::element_text(size = 8),
+      legend.position = "bottom"
+    )
+}
+
+heatmap_plot <- function(data) {
+  if (!nrow(data$table)) {
+    return(empty_plot("No enrichment terms are available."))
+  }
+  filter_threshold <- if (any(data$table$FDR <= 0.15, na.rm = TRUE)) 0.15 else 1
+  top_items <- data$table |>
+    dplyr::filter(.data$FDR < filter_threshold) |>
+    dplyr::group_by(.data$term) |>
+    dplyr::summarize(min_fdr = min(.data$FDR), .groups = "drop") |>
+    dplyr::arrange(.data$min_fdr) |>
+    utils::head(top_terms) |>
+    dplyr::pull(.data$term)
+  plot_data <- data$table |>
+    dplyr::filter(.data$term %in% top_items) |>
+    dplyr::mutate(
+      significance = dplyr::case_when(
+        .data$FDR < 0.01 ~ "***",
+        .data$FDR < 0.05 ~ "**",
+        .data$FDR < 0.1 ~ "*",
+        TRUE ~ ""
+      )
+    )
+  ggplot2::ggplot(
+    plot_data,
+    ggplot2::aes(
+      x = .data$contrast,
+      y = stats::reorder(.data$term, .data$NES),
+      fill = .data$NES
+    )
+  ) +
+    ggplot2::geom_tile(colour = "white") +
+    ggplot2::geom_text(ggplot2::aes(label = .data$significance), size = 4) +
+    ggplot2::scale_fill_gradient2(low = "#2b6cb0", mid = "white", high = "#c53030") +
+    ggplot2::theme_minimal() +
+    ggplot2::theme(
+      axis.text.x = ggplot2::element_text(angle = 45, hjust = 1),
+      axis.text.y = ggplot2::element_text(size = 8)
+    ) +
+    ggplot2::labs(
+      x = NULL,
+      y = NULL,
+      fill = "NES",
+      subtitle = "* FDR < 0.1, ** FDR < 0.05, *** FDR < 0.01"
+    )
+}
+
+volcano_plot <- function(data) {
+  volcano_data <- data$table |>
+    dplyr::filter(is.finite(.data$NES), is.finite(.data$FDR)) |>
+    dplyr::mutate(
+      negative_log10_fdr = -log10(pmax(.data$FDR, 1e-10)),
+      direction = dplyr::case_when(
+        .data$NES > 0 ~ "Up",
+        .data$NES < 0 ~ "Down",
+        TRUE ~ "NS"
+      ),
+      significant = .data$FDR < fdr_threshold
+    )
+  if (!nrow(volcano_data)) {
+    return(empty_plot("No finite enrichment statistics are available."))
+  }
+  label_data <- volcano_data |>
+    dplyr::filter(.data$FDR < fdr_threshold) |>
+    dplyr::group_by(.data$contrast) |>
+    dplyr::slice_min(.data$FDR, n = min(5L, top_terms)) |>
+    dplyr::ungroup() |>
+    dplyr::mutate(label_hjust = ifelse(.data$NES < 0, 1.1, -0.1))
+  ggplot2::ggplot(
+    volcano_data,
+    ggplot2::aes(x = .data$NES, y = .data$negative_log10_fdr)
+  ) +
+    ggplot2::geom_point(
+      ggplot2::aes(colour = .data$direction, alpha = .data$significant),
+      size = 2
+    ) +
+    ggplot2::geom_hline(
+      yintercept = -log10(fdr_threshold),
+      linetype = "dashed",
+      colour = "grey30"
+    ) +
+    ggplot2::geom_vline(xintercept = 0, linetype = "dashed", colour = "grey30") +
+    ggplot2::geom_text(
+      data = label_data,
+      ggplot2::aes(label = .data$term, hjust = .data$label_hjust),
+      size = 2.5,
+      check_overlap = TRUE
+    ) +
+    ggplot2::scale_x_continuous(
+      expand = ggplot2::expansion(mult = c(0.16, 0.16))
+    ) +
+    ggplot2::scale_colour_manual(
+      values = c(Up = "red", Down = "blue", NS = "grey50")
+    ) +
+    ggplot2::scale_alpha_manual(
+      values = c(`TRUE` = 1, `FALSE` = 0.3),
+      guide = "none"
+    ) +
+    ggplot2::facet_wrap(~ .data$contrast, scales = "free") +
+    ggplot2::theme_bw() +
+    ggplot2::theme(
+      legend.position = "bottom",
+      plot.margin = ggplot2::margin(5.5, 18, 5.5, 18)
+    ) +
+    ggplot2::labs(
+      subtitle = paste0(
+        "Dashed line: FDR = ",
+        fdr_threshold,
+        "; labels: top ",
+        min(5L, top_terms),
+        " by FDR per contrast"
+      ),
+      x = "NES",
+      y = "-log10(FDR)",
+      colour = "Direction"
+    )
+}
+
+running_score_plots <- function(data) {
+  plots <- list()
+  for (contrast_name in names(data$native)) {
+    result <- data$native[[contrast_name]]
+    if (!nrow(result@result)) {
+      next
+    }
+    top <- result@result |>
+      dplyr::arrange(.data$p.adjust, .data$pvalue) |>
+      utils::head(running_terms)
+    for (i in seq_len(nrow(top))) {
+      term_id <- top$ID[[i]]
+      title <- paste0(
+        gsub("_", " ", contrast_name, fixed = TRUE),
+        " · ",
+        top$Description[[i]],
+        " (NES=", round(top$NES[[i]], 2),
+        ", FDR=", signif(top$p.adjust[[i]], 2), ")"
+      )
+      plots[[paste(contrast_name, term_id, sep = "__")]] <- enrichplot::gseaplot2(
+        result,
+        geneSetID = term_id,
+        title = title,
+        pvalue_table = FALSE
+      )
+    }
+  }
+  plots
+}
+
+as_patchwork <- function(plot) {
+  if (!inherits(plot, "gglist")) {
+    return(plot)
+  }
+  params <- attr(plot, "params")
+  patchwork::wrap_plots(
+    unclass(plot),
+    ncol = params$ncol,
+    heights = params$heights
+  )
+}
+
+print_running_scores <- function(data) {
+  plots <- running_score_plots(data)
+  if (!length(plots)) {
+    cat("::: {.callout-note}\nNo enrichment term is available for a running-score plot.\n:::\n")
+    return(invisible(NULL))
+  }
+  plots <- lapply(plots, as_patchwork)
+  print(patchwork::wrap_plots(plots, ncol = min(2L, length(plots))))
+  invisible(NULL)
+}
+
+rank_distribution_plots <- function(data) {
+  usable <- nonempty_native_results(data)
+  lapply(names(usable), function(contrast_name) {
+    result <- usable[[contrast_name]]
+    enrichplot::ridgeplot(
+      result,
+      showCategory = as.numeric(min(top_terms, nrow(result@result))),
+      fill = "p.adjust"
+    ) +
+      ggplot2::labs(
+        title = paste0(
+          gsub("_", " ", contrast_name, fixed = TRUE),
+          " · ranked-site distributions"
+        ),
+        x = "Site ranking statistic",
+        fill = "FDR"
+      ) +
+      ggplot2::theme(legend.position = "bottom")
+  })
+}
+
+print_rank_distributions <- function(data) {
+  plots <- rank_distribution_plots(data)
+  if (!length(plots)) {
+    cat("::: {.callout-note}\nNo enrichment term is available for a rank-distribution plot.\n:::\n")
+    return(invisible(NULL))
+  }
+  print(patchwork::wrap_plots(plots, ncol = min(2L, length(plots))))
+  invisible(NULL)
+}
+
+gene_set_network_plot <- function(data) {
+  object <- combined_native_result(data)
+  if (is.null(object)) {
+    return(empty_plot("No enrichment term is available for a gene-set network."))
+  }
+  enrichplot::cnetplot(
+    object,
+    showCategory = min(4L, top_terms),
+    node_label = "category"
+  ) +
+    ggplot2::labs(
+      title = paste0(analysis_label, " · ", data$label),
+      subtitle = "Leading terms and their shared ranked sites"
+    )
+}
+
+term_similarity_plots <- function(data) {
+  object <- combined_native_result(data)
+  if (is.null(object)) {
+    return(list())
+  }
+  result <- if (methods::is(object, "compareClusterResult")) {
+    object@compareClusterResult
+  } else {
+    object@result
+  }
+  if (length(unique(result$ID)) < 3L) {
+    return(list())
+  }
+  n_show <- min(12L, top_terms, length(unique(result$ID)))
+  similarity <- enrichplot::pairwise_termsim(object)
+  list(
+    enrichplot::emapplot(similarity, showCategory = n_show) +
+      ggplot2::labs(
+        title = "Enrichment map",
+        subtitle = "Terms are connected by ranked-site overlap"
+      ),
+    enrichplot::treeplot(similarity, showCategory = n_show) +
+      ggplot2::labs(
+        title = "Term-similarity tree",
+        subtitle = "Terms are grouped by ranked-site overlap"
+      )
+  )
+}
+
+print_term_similarity <- function(data) {
+  plots <- term_similarity_plots(data)
+  if (!length(plots)) {
+    cat("::: {.callout-note}\nAt least three enrichment terms are required for term-similarity plots.\n:::\n")
+    return(invisible(NULL))
+  }
+  print(patchwork::wrap_plots(plots, ncol = min(2L, length(plots))))
+  invisible(NULL)
+}
+
+result_widget <- function(data) {
+  display <- data$table |>
+    dplyr::transmute(
+      Contrast = gsub("_", " ", .data$contrast, fixed = TRUE),
+      Term = .data$term,
+      NES = round(.data$NES, 3),
+      FDR = signif(.data$FDR, 3),
+      Direction = .data$direction,
+      `Mapped sites` = .data$mapped_sites,
+      `Set size` = .data$set_size,
+      `Leading-edge sites` = .data$leading_edge_sites
+    ) |>
+    dplyr::arrange(.data$Contrast, .data$FDR)
+  DT::datatable(
+    display,
+    filter = "top",
+    rownames = FALSE,
+    class = "compact stripe",
+    extensions = "Buttons",
+    options = list(
+      pageLength = 12,
+      scrollX = TRUE,
+      scrollY = "420px",
+      deferRender = TRUE,
+      dom = "Bfrtip",
+      buttons = c("copy", "csv", "excel")
+    )
+  )
+}
+
+overview <- dplyr::bind_rows(lapply(enrichment, function(method) {
+  data.frame(
+    Tool = method$label,
+    Contrasts = length(method$contrasts),
+    Terms = nrow(method$table),
+    `FDR-significant` = sum(method$table$FDR <= fdr_threshold, na.rm = TRUE),
+    check.names = FALSE
+  )
+}))
+generated_at <- format(Sys.time(), "%Y-%m-%d %H:%M:%S %Z")
+```
+
+```{r report-metadata}
+#| results: asis
+cat(sprintf(
+  '<div id="fgcz-report-metadata" hidden data-generated-at="%s"></div>',
+  generated_at
+))
+```
+
+::: {.panel-tabset}
+
+# Overview
+
+<img src="`r knitr::image_uri(abstract_path)`" alt="Visual abstract showing DPA, DPU, and CorrectFirst rankings entering PTM-SEA, Kinase GSEA, and MEA, followed by comparable enrichment plots and result tables decoded from JSON." style="width: 100%; max-height: 20rem; object-fit: contain;">
+
+This report visualizes one completed **`r analysis_label`** enrichment document. The document contains a shared ranked list for every contrast and the results from **PTM-SEA**, **Kinase GSEA**, and **MEA**. Every statistic, membership, leading edge, and running enrichment score is decoded from the supplied JSON; this report does not rerun enrichment.
+
+```{r}
+#| label: tbl-tool-overview
+#| tbl-cap: "PTM enrichment tools, contrasts, tested terms, and terms passing the report FDR threshold."
+DT::datatable(
+  overview,
+  filter = "none",
+  rownames = FALSE,
+  class = "compact stripe",
+  options = list(pageLength = 10, scrollX = TRUE, dom = "t")
+)
+```
+
+# PTM-SEA
+
+PTM-SEA tests curated kinase, perturbation, pathway, and disease-associated PTM signatures against the `r analysis_label` site ranking.
+
+::: {.panel-tabset}
+
+## Summary
+
+```{r}
+#| label: tbl-ptmsea-summary
+#| tbl-cap: "PTM-SEA result counts by contrast and enrichment direction."
+summary_widget(enrichment$PTMSEA)
+```
+
+## Dot plot
+
+```{r}
+#| label: fig-ptmsea-dotplot
+#| fig-width: 11
+#| fig-height: 5.2
+#| out-width: "94%"
+#| fig-cap: "PTM-SEA normalized enrichment scores by contrast. Point position gives NES, colour gives adjusted significance, and point size gives the mapped-site count."
+dot_plot(enrichment$PTMSEA)
+```
+
+## Heatmap
+
+```{r}
+#| label: fig-ptmsea-heatmap
+#| fig-width: 11
+#| fig-height: 5.2
+#| out-width: "94%"
+#| fig-cap: "PTM-SEA normalized enrichment scores for the leading signatures across contrasts. Tile colour gives NES and symbols indicate FDR thresholds."
+heatmap_plot(enrichment$PTMSEA)
+```
+
+## Volcano
+
+```{r}
+#| label: fig-ptmsea-volcano
+#| fig-width: 12
+#| fig-height: 4.4
+#| out-width: "96%"
+#| fig-cap: "PTM-SEA normalized enrichment score as a function of FDR. Each point is one signature and each panel is one contrast."
+volcano_plot(enrichment$PTMSEA)
+```
+
+## Running score
+
+```{r}
+#| label: fig-ptmsea-running
+#| fig-width: 12
+#| fig-height: 5.8
+#| out-width: "96%"
+#| fig-cap: "Running enrichment scores for the leading PTM-SEA signature in each contrast, reconstructed from the ordered ranks, signature membership, and weighting parameters stored in JSON."
+#| results: asis
+print_running_scores(enrichment$PTMSEA)
+```
+
+## Rank distributions
+
+```{r}
+#| label: fig-ptmsea-ridge
+#| fig-width: 12
+#| fig-height: 5.4
+#| out-width: "96%"
+#| fig-cap: "Ranked-site distributions for the leading PTM-SEA signatures. Each ridge shows the ranking statistics of sites belonging to one signature and colour encodes FDR."
+#| results: asis
+print_rank_distributions(enrichment$PTMSEA)
+```
+
+## Gene-set network
+
+```{r}
+#| label: fig-ptmsea-network
+#| fig-width: 11
+#| fig-height: 6.2
+#| out-width: "94%"
+#| fig-cap: "PTM-SEA signature network. Signature nodes connect to their member sites, exposing shared sites across leading terms and contrasts."
+gene_set_network_plot(enrichment$PTMSEA)
+```
+
+## Term similarity
+
+```{r}
+#| label: fig-ptmsea-similarity
+#| fig-width: 12
+#| fig-height: 5.8
+#| out-width: "96%"
+#| fig-cap: "PTM-SEA enrichment map and similarity tree. Signatures are related by overlap among their ranked-site members."
+#| results: asis
+print_term_similarity(enrichment$PTMSEA)
+```
+
+## Results
+
+```{r}
+#| label: tbl-ptmsea-results
+#| tbl-cap: "Complete PTM-SEA result table decoded from the shared JSON document."
+result_widget(enrichment$PTMSEA)
+```
+
+:::
+
+# Kinase GSEA
+
+Kinase GSEA tests predicted kinase-substrate sets against the same `r analysis_label` ranked sites.
+
+::: {.panel-tabset}
+
+## Summary
+
+```{r}
+#| label: tbl-kinase-summary
+#| tbl-cap: "Kinase GSEA result counts by contrast and enrichment direction."
+summary_widget(enrichment$KinaseGSEA)
+```
+
+## Dot plot
+
+```{r}
+#| label: fig-kinase-dotplot
+#| fig-width: 11
+#| fig-height: 5.2
+#| out-width: "94%"
+#| fig-cap: "Kinase GSEA normalized enrichment scores by contrast. Point position gives NES, colour gives adjusted significance, and point size gives the mapped-site count."
+dot_plot(enrichment$KinaseGSEA)
+```
+
+## Heatmap
+
+```{r}
+#| label: fig-kinase-heatmap
+#| fig-width: 11
+#| fig-height: 5.2
+#| out-width: "94%"
+#| fig-cap: "Kinase GSEA normalized enrichment scores for the leading kinases across contrasts. Tile colour gives NES and symbols indicate FDR thresholds."
+heatmap_plot(enrichment$KinaseGSEA)
+```
+
+## Volcano
+
+```{r}
+#| label: fig-kinase-volcano
+#| fig-width: 12
+#| fig-height: 4.4
+#| out-width: "96%"
+#| fig-cap: "Kinase GSEA normalized enrichment score as a function of FDR. Each point is one kinase and each panel is one contrast."
+volcano_plot(enrichment$KinaseGSEA)
+```
+
+## Running score
+
+```{r}
+#| label: fig-kinase-running
+#| fig-width: 12
+#| fig-height: 5.8
+#| out-width: "96%"
+#| fig-cap: "Running enrichment scores for the leading kinase set in each contrast, reconstructed from the ordered ranks, substrate membership, and weighting parameters stored in JSON."
+#| results: asis
+print_running_scores(enrichment$KinaseGSEA)
+```
+
+## Rank distributions
+
+```{r}
+#| label: fig-kinase-ridge
+#| fig-width: 12
+#| fig-height: 5.4
+#| out-width: "96%"
+#| fig-cap: "Ranked-site distributions for the leading kinase substrate sets. Each ridge shows the ranking statistics of sites assigned to one kinase and colour encodes FDR."
+#| results: asis
+print_rank_distributions(enrichment$KinaseGSEA)
+```
+
+## Gene-set network
+
+```{r}
+#| label: fig-kinase-network
+#| fig-width: 11
+#| fig-height: 6.2
+#| out-width: "94%"
+#| fig-cap: "Kinase substrate-set network. Kinase nodes connect to their predicted substrate sites, exposing shared sites across leading kinases and contrasts."
+gene_set_network_plot(enrichment$KinaseGSEA)
+```
+
+## Term similarity
+
+```{r}
+#| label: fig-kinase-similarity
+#| fig-width: 12
+#| fig-height: 5.8
+#| out-width: "96%"
+#| fig-cap: "Kinase GSEA enrichment map and similarity tree. Kinases are related by overlap among their predicted substrate sites."
+#| results: asis
+print_term_similarity(enrichment$KinaseGSEA)
+```
+
+## Results
+
+```{r}
+#| label: tbl-kinase-results
+#| tbl-cap: "Complete Kinase GSEA result table decoded from the shared JSON document."
+result_widget(enrichment$KinaseGSEA)
+```
+
+:::
+
+# MEA
+
+MEA reports the native GSEApy kinase-motif enrichment against the same `r analysis_label` ranked sites. The shared JSON retains its source running scores and hit positions.
+
+::: {.panel-tabset}
+
+## Summary
+
+```{r}
+#| label: tbl-mea-summary
+#| tbl-cap: "MEA result counts by contrast and enrichment direction."
+summary_widget(enrichment$MEA)
+```
+
+## Dot plot
+
+```{r}
+#| label: fig-mea-dotplot
+#| fig-width: 11
+#| fig-height: 5.2
+#| out-width: "94%"
+#| fig-cap: "MEA normalized enrichment scores by contrast. Point position gives native NES, colour gives adjusted significance, and point size gives the mapped-site count."
+dot_plot(enrichment$MEA)
+```
+
+## Heatmap
+
+```{r}
+#| label: fig-mea-heatmap
+#| fig-width: 11
+#| fig-height: 5.2
+#| out-width: "94%"
+#| fig-cap: "MEA normalized enrichment scores for the leading kinase motifs across contrasts. Tile colour gives NES and symbols indicate FDR thresholds."
+heatmap_plot(enrichment$MEA)
+```
+
+## Volcano
+
+```{r}
+#| label: fig-mea-volcano
+#| fig-width: 12
+#| fig-height: 4.4
+#| out-width: "96%"
+#| fig-cap: "MEA normalized enrichment score as a function of FDR. Each point is one kinase motif and each panel is one contrast."
+volcano_plot(enrichment$MEA)
+```
+
+## Running score
+
+```{r}
+#| label: fig-mea-running
+#| fig-width: 12
+#| fig-height: 5.8
+#| out-width: "96%"
+#| fig-cap: "Native MEA running enrichment scores for the leading kinase motif in each contrast, reconstructed from the GSEApy scores and hit positions stored in JSON."
+#| results: asis
+print_running_scores(enrichment$MEA)
+```
+
+## Rank distributions
+
+```{r}
+#| label: fig-mea-ridge
+#| fig-width: 12
+#| fig-height: 5.4
+#| out-width: "96%"
+#| fig-cap: "Ranked-site distributions for the leading MEA kinase motifs. Each ridge shows the ranking statistics of substrate sites and colour encodes FDR."
+#| results: asis
+print_rank_distributions(enrichment$MEA)
+```
+
+## Gene-set network
+
+```{r}
+#| label: fig-mea-network
+#| fig-width: 11
+#| fig-height: 6.2
+#| out-width: "94%"
+#| fig-cap: "MEA kinase-motif network. Kinase nodes connect to their substrate sites, exposing shared sites across leading motifs and contrasts."
+gene_set_network_plot(enrichment$MEA)
+```
+
+## Term similarity
+
+```{r}
+#| label: fig-mea-similarity
+#| fig-width: 12
+#| fig-height: 5.8
+#| out-width: "96%"
+#| fig-cap: "MEA enrichment map and similarity tree. Kinase motifs are related by overlap among their substrate sites."
+#| results: asis
+print_term_similarity(enrichment$MEA)
+```
+
+## Results
+
+```{r}
+#| label: tbl-mea-results
+#| tbl-cap: "Complete MEA result table decoded from the shared JSON document."
+result_widget(enrichment$MEA)
+```
+
+:::
+
+# Session Info
+
+::: {.panel-tabset}
+
+## Report provenance
+
+```{r}
+#| label: tbl-report-provenance
+#| tbl-cap: "Input document, report parameters, package version, and render timestamp."
+qmd_source <- fgczQuartoTemplate::fgcz_qmd_source_link()
+provenance <- data.frame(
+  Field = c(
+    "Analysis",
+    "Input JSON",
+    "Contrasts",
+    "Tools",
+    "FDR threshold",
+    "Top terms per summary plot",
+    "Running-score terms per contrast",
+    "Report package",
+    "Generated at",
+    "Qmd source"
+  ),
+  Value = c(
+    analysis_label,
+    json_path,
+    paste(names(payload$data), collapse = "; "),
+    paste(unname(method_labels), collapse = "; "),
+    format(fdr_threshold),
+    top_terms,
+    running_terms,
+    paste0("protsea ", utils::packageVersion("protsea")),
+    generated_at,
+    qmd_source
+  ),
+  stringsAsFactors = FALSE
+)
+DT::datatable(
+  provenance,
+  filter = "none",
+  rownames = FALSE,
+  escape = FALSE,
+  class = "compact stripe",
+  options = list(pageLength = 10, scrollX = TRUE, dom = "t")
+)
+```
+
+## R session info
+
+```{r session-info}
+utils::sessionInfo()
+```
+
+:::
+
+:::

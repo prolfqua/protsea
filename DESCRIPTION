@@ -21,6 +21,7 @@ Suggests:
     altdoc,
     clusterProfiler,
     devtools,
+    dplyr,
     roxygen2,
     rcmdcheck,
     DT,
@@ -35,6 +36,6 @@ Suggests:
     rprojroot,
     testthat (>= 3.0.0)
 Remotes:
-    github::fgcz/fgczQuartoTemplate@dbeb852bc14f4374d59ff8b94350faf84f4513e1
+    github::fgcz/fgczQuartoTemplate@5f7cd7f41203a949c78aa78cddb10637ce395fe1
 Config/testthat/edition: 3
 VignetteBuilder: knitr, quarto
