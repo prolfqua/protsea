@@ -15,7 +15,6 @@ params:
   analysis_label: null
   fdr_threshold: 0.1
   top_terms: 10
-  running_terms: 1
 vignette: >
   %\VignetteIndexEntry{PTM Enrichment}
   %\VignetteEngine{quarto::format}
@@ -52,9 +51,9 @@ knitr::opts_chunk$set(
   echo = FALSE,
   message = FALSE,
   warning = FALSE,
-  fig.width = 9,
-  fig.height = 5.2,
-  out.width = "92%",
+  fig.width = 8.5,
+  fig.height = 4.4,
+  out.width = "76%",
   fig.align = "center"
 )
 
@@ -135,16 +134,12 @@ analysis_label <- as.character(analysis_label[[1L]])
 
 fdr_threshold <- as.numeric(params$fdr_threshold)
 top_terms <- as.integer(params$top_terms)
-running_terms <- as.integer(params$running_terms)
 if (length(fdr_threshold) != 1L || !is.finite(fdr_threshold) ||
     fdr_threshold <= 0 || fdr_threshold > 1) {
   stop("fdr_threshold must be one number in (0, 1].", call. = FALSE)
 }
 if (length(top_terms) != 1L || is.na(top_terms) || top_terms < 1L) {
   stop("top_terms must be one positive integer.", call. = FALSE)
-}
-if (length(running_terms) != 1L || is.na(running_terms) || running_terms < 1L) {
-  stop("running_terms must be one positive integer.", call. = FALSE)
 }
 
 empty_terms <- function() {
@@ -396,59 +391,6 @@ volcano_plot <- function(data) {
     )
 }
 
-running_score_plots <- function(data) {
-  plots <- list()
-  for (contrast_name in names(data$native)) {
-    result <- data$native[[contrast_name]]
-    if (!nrow(result@result)) {
-      next
-    }
-    top <- result@result |>
-      dplyr::arrange(.data$p.adjust, .data$pvalue) |>
-      utils::head(running_terms)
-    for (i in seq_len(nrow(top))) {
-      term_id <- top$ID[[i]]
-      title <- paste0(
-        gsub("_", " ", contrast_name, fixed = TRUE),
-        " · ",
-        top$Description[[i]],
-        " (NES=", round(top$NES[[i]], 2),
-        ", FDR=", signif(top$p.adjust[[i]], 2), ")"
-      )
-      plots[[paste(contrast_name, term_id, sep = "__")]] <- enrichplot::gseaplot2(
-        result,
-        geneSetID = term_id,
-        title = title,
-        pvalue_table = FALSE
-      )
-    }
-  }
-  plots
-}
-
-as_patchwork <- function(plot) {
-  if (!inherits(plot, "gglist")) {
-    return(plot)
-  }
-  params <- attr(plot, "params")
-  patchwork::wrap_plots(
-    unclass(plot),
-    ncol = params$ncol,
-    heights = params$heights
-  )
-}
-
-print_running_scores <- function(data) {
-  plots <- running_score_plots(data)
-  if (!length(plots)) {
-    cat("::: {.callout-note}\nNo enrichment term is available for a running-score plot.\n:::\n")
-    return(invisible(NULL))
-  }
-  plots <- lapply(plots, as_patchwork)
-  print(patchwork::wrap_plots(plots, ncol = min(2L, length(plots))))
-  invisible(NULL)
-}
-
 rank_distribution_plots <- function(data) {
   usable <- nonempty_native_results(data)
   lapply(names(usable), function(contrast_name) {
@@ -591,7 +533,7 @@ cat(sprintf(
 
 <img src="`r knitr::image_uri(abstract_path)`" alt="Visual abstract showing DPA, DPU, and CorrectFirst rankings entering PTM-SEA, Kinase GSEA, and MEA, followed by comparable enrichment plots and result tables decoded from JSON." style="width: 100%; max-height: 20rem; object-fit: contain;">
 
-This report visualizes one completed **`r analysis_label`** enrichment document. The document contains a shared ranked list for every contrast and the results from **PTM-SEA**, **Kinase GSEA**, and **MEA**. Every statistic, membership, leading edge, and running enrichment score is decoded from the supplied JSON; this report does not rerun enrichment.
+This report visualizes one completed **`r analysis_label`** enrichment document. The document contains a shared ranked list for every contrast and the results from **PTM-SEA**, **Kinase GSEA**, and **MEA**. Every statistic, membership, and leading edge is decoded from the supplied JSON; this report does not rerun enrichment.
 
 ```{r}
 #| label: tbl-tool-overview
@@ -623,9 +565,9 @@ summary_widget(enrichment$PTMSEA)
 
 ```{r}
 #| label: fig-ptmsea-dotplot
-#| fig-width: 11
-#| fig-height: 5.2
-#| out-width: "94%"
+#| fig-width: 9
+#| fig-height: 4.4
+#| out-width: "76%"
 #| fig-cap: "PTM-SEA normalized enrichment scores by contrast. Point position gives NES, colour gives adjusted significance, and point size gives the mapped-site count."
 dot_plot(enrichment$PTMSEA)
 ```
@@ -634,9 +576,9 @@ dot_plot(enrichment$PTMSEA)
 
 ```{r}
 #| label: fig-ptmsea-heatmap
-#| fig-width: 11
-#| fig-height: 5.2
-#| out-width: "94%"
+#| fig-width: 9
+#| fig-height: 4.4
+#| out-width: "76%"
 #| fig-cap: "PTM-SEA normalized enrichment scores for the leading signatures across contrasts. Tile colour gives NES and symbols indicate FDR thresholds."
 heatmap_plot(enrichment$PTMSEA)
 ```
@@ -645,32 +587,20 @@ heatmap_plot(enrichment$PTMSEA)
 
 ```{r}
 #| label: fig-ptmsea-volcano
-#| fig-width: 12
-#| fig-height: 4.4
-#| out-width: "96%"
+#| fig-width: 9.5
+#| fig-height: 3.8
+#| out-width: "80%"
 #| fig-cap: "PTM-SEA normalized enrichment score as a function of FDR. Each point is one signature and each panel is one contrast."
 volcano_plot(enrichment$PTMSEA)
-```
-
-## Running score
-
-```{r}
-#| label: fig-ptmsea-running
-#| fig-width: 12
-#| fig-height: 5.8
-#| out-width: "96%"
-#| fig-cap: "Running enrichment scores for the leading PTM-SEA signature in each contrast, reconstructed from the ordered ranks, signature membership, and weighting parameters stored in JSON."
-#| results: asis
-print_running_scores(enrichment$PTMSEA)
 ```
 
 ## Rank distributions
 
 ```{r}
 #| label: fig-ptmsea-ridge
-#| fig-width: 12
-#| fig-height: 5.4
-#| out-width: "96%"
+#| fig-width: 10
+#| fig-height: 4.5
+#| out-width: "86%"
 #| fig-cap: "Ranked-site distributions for the leading PTM-SEA signatures. Each ridge shows the ranking statistics of sites belonging to one signature and colour encodes FDR."
 #| results: asis
 print_rank_distributions(enrichment$PTMSEA)
@@ -680,9 +610,9 @@ print_rank_distributions(enrichment$PTMSEA)
 
 ```{r}
 #| label: fig-ptmsea-network
-#| fig-width: 11
-#| fig-height: 6.2
-#| out-width: "94%"
+#| fig-width: 9
+#| fig-height: 5
+#| out-width: "78%"
 #| fig-cap: "PTM-SEA signature network. Signature nodes connect to their member sites, exposing shared sites across leading terms and contrasts."
 gene_set_network_plot(enrichment$PTMSEA)
 ```
@@ -691,9 +621,9 @@ gene_set_network_plot(enrichment$PTMSEA)
 
 ```{r}
 #| label: fig-ptmsea-similarity
-#| fig-width: 12
-#| fig-height: 5.8
-#| out-width: "96%"
+#| fig-width: 10
+#| fig-height: 4.8
+#| out-width: "86%"
 #| fig-cap: "PTM-SEA enrichment map and similarity tree. Signatures are related by overlap among their ranked-site members."
 #| results: asis
 print_term_similarity(enrichment$PTMSEA)
@@ -727,9 +657,9 @@ summary_widget(enrichment$KinaseGSEA)
 
 ```{r}
 #| label: fig-kinase-dotplot
-#| fig-width: 11
-#| fig-height: 5.2
-#| out-width: "94%"
+#| fig-width: 9
+#| fig-height: 4.4
+#| out-width: "76%"
 #| fig-cap: "Kinase GSEA normalized enrichment scores by contrast. Point position gives NES, colour gives adjusted significance, and point size gives the mapped-site count."
 dot_plot(enrichment$KinaseGSEA)
 ```
@@ -738,9 +668,9 @@ dot_plot(enrichment$KinaseGSEA)
 
 ```{r}
 #| label: fig-kinase-heatmap
-#| fig-width: 11
-#| fig-height: 5.2
-#| out-width: "94%"
+#| fig-width: 9
+#| fig-height: 4.4
+#| out-width: "76%"
 #| fig-cap: "Kinase GSEA normalized enrichment scores for the leading kinases across contrasts. Tile colour gives NES and symbols indicate FDR thresholds."
 heatmap_plot(enrichment$KinaseGSEA)
 ```
@@ -749,32 +679,20 @@ heatmap_plot(enrichment$KinaseGSEA)
 
 ```{r}
 #| label: fig-kinase-volcano
-#| fig-width: 12
-#| fig-height: 4.4
-#| out-width: "96%"
+#| fig-width: 9.5
+#| fig-height: 3.8
+#| out-width: "80%"
 #| fig-cap: "Kinase GSEA normalized enrichment score as a function of FDR. Each point is one kinase and each panel is one contrast."
 volcano_plot(enrichment$KinaseGSEA)
-```
-
-## Running score
-
-```{r}
-#| label: fig-kinase-running
-#| fig-width: 12
-#| fig-height: 5.8
-#| out-width: "96%"
-#| fig-cap: "Running enrichment scores for the leading kinase set in each contrast, reconstructed from the ordered ranks, substrate membership, and weighting parameters stored in JSON."
-#| results: asis
-print_running_scores(enrichment$KinaseGSEA)
 ```
 
 ## Rank distributions
 
 ```{r}
 #| label: fig-kinase-ridge
-#| fig-width: 12
-#| fig-height: 5.4
-#| out-width: "96%"
+#| fig-width: 10
+#| fig-height: 4.5
+#| out-width: "86%"
 #| fig-cap: "Ranked-site distributions for the leading kinase substrate sets. Each ridge shows the ranking statistics of sites assigned to one kinase and colour encodes FDR."
 #| results: asis
 print_rank_distributions(enrichment$KinaseGSEA)
@@ -784,9 +702,9 @@ print_rank_distributions(enrichment$KinaseGSEA)
 
 ```{r}
 #| label: fig-kinase-network
-#| fig-width: 11
-#| fig-height: 6.2
-#| out-width: "94%"
+#| fig-width: 9
+#| fig-height: 5
+#| out-width: "78%"
 #| fig-cap: "Kinase substrate-set network. Kinase nodes connect to their predicted substrate sites, exposing shared sites across leading kinases and contrasts."
 gene_set_network_plot(enrichment$KinaseGSEA)
 ```
@@ -795,9 +713,9 @@ gene_set_network_plot(enrichment$KinaseGSEA)
 
 ```{r}
 #| label: fig-kinase-similarity
-#| fig-width: 12
-#| fig-height: 5.8
-#| out-width: "96%"
+#| fig-width: 10
+#| fig-height: 4.8
+#| out-width: "86%"
 #| fig-cap: "Kinase GSEA enrichment map and similarity tree. Kinases are related by overlap among their predicted substrate sites."
 #| results: asis
 print_term_similarity(enrichment$KinaseGSEA)
@@ -831,9 +749,9 @@ summary_widget(enrichment$MEA)
 
 ```{r}
 #| label: fig-mea-dotplot
-#| fig-width: 11
-#| fig-height: 5.2
-#| out-width: "94%"
+#| fig-width: 9
+#| fig-height: 4.4
+#| out-width: "76%"
 #| fig-cap: "MEA normalized enrichment scores by contrast. Point position gives native NES, colour gives adjusted significance, and point size gives the mapped-site count."
 dot_plot(enrichment$MEA)
 ```
@@ -842,9 +760,9 @@ dot_plot(enrichment$MEA)
 
 ```{r}
 #| label: fig-mea-heatmap
-#| fig-width: 11
-#| fig-height: 5.2
-#| out-width: "94%"
+#| fig-width: 9
+#| fig-height: 4.4
+#| out-width: "76%"
 #| fig-cap: "MEA normalized enrichment scores for the leading kinase motifs across contrasts. Tile colour gives NES and symbols indicate FDR thresholds."
 heatmap_plot(enrichment$MEA)
 ```
@@ -853,32 +771,20 @@ heatmap_plot(enrichment$MEA)
 
 ```{r}
 #| label: fig-mea-volcano
-#| fig-width: 12
-#| fig-height: 4.4
-#| out-width: "96%"
+#| fig-width: 9.5
+#| fig-height: 3.8
+#| out-width: "80%"
 #| fig-cap: "MEA normalized enrichment score as a function of FDR. Each point is one kinase motif and each panel is one contrast."
 volcano_plot(enrichment$MEA)
-```
-
-## Running score
-
-```{r}
-#| label: fig-mea-running
-#| fig-width: 12
-#| fig-height: 5.8
-#| out-width: "96%"
-#| fig-cap: "Native MEA running enrichment scores for the leading kinase motif in each contrast, reconstructed from the GSEApy scores and hit positions stored in JSON."
-#| results: asis
-print_running_scores(enrichment$MEA)
 ```
 
 ## Rank distributions
 
 ```{r}
 #| label: fig-mea-ridge
-#| fig-width: 12
-#| fig-height: 5.4
-#| out-width: "96%"
+#| fig-width: 10
+#| fig-height: 4.5
+#| out-width: "86%"
 #| fig-cap: "Ranked-site distributions for the leading MEA kinase motifs. Each ridge shows the ranking statistics of substrate sites and colour encodes FDR."
 #| results: asis
 print_rank_distributions(enrichment$MEA)
@@ -888,9 +794,9 @@ print_rank_distributions(enrichment$MEA)
 
 ```{r}
 #| label: fig-mea-network
-#| fig-width: 11
-#| fig-height: 6.2
-#| out-width: "94%"
+#| fig-width: 9
+#| fig-height: 5
+#| out-width: "78%"
 #| fig-cap: "MEA kinase-motif network. Kinase nodes connect to their substrate sites, exposing shared sites across leading motifs and contrasts."
 gene_set_network_plot(enrichment$MEA)
 ```
@@ -899,9 +805,9 @@ gene_set_network_plot(enrichment$MEA)
 
 ```{r}
 #| label: fig-mea-similarity
-#| fig-width: 12
-#| fig-height: 5.8
-#| out-width: "96%"
+#| fig-width: 10
+#| fig-height: 4.8
+#| out-width: "86%"
 #| fig-cap: "MEA enrichment map and similarity tree. Kinase motifs are related by overlap among their substrate sites."
 #| results: asis
 print_term_similarity(enrichment$MEA)
@@ -914,6 +820,73 @@ print_term_similarity(enrichment$MEA)
 #| tbl-cap: "Complete MEA result table decoded from the shared JSON document."
 result_widget(enrichment$MEA)
 ```
+
+:::
+
+# About methods
+
+::: {.panel-tabset}
+
+## Reading the results
+
+::: {.callout-tip}
+### NES, FDR, and leading edge
+
+All three methods test sets of phosphosites against the same ranked contrast.
+A positive normalized enrichment score (**NES**) means the set is concentrated
+near the positive end of the ranking; a negative NES means concentration near
+the negative end. The **FDR** corrects for the many tested sets. The
+**leading-edge sites** are the subset that contributes most strongly to the
+enrichment score.
+:::
+
+The sign describes the direction of the ranked site-level effect. Its biological
+meaning therefore follows the analysis supplied to this report: DPA, DPU, or
+CorrectFirst DPU.
+
+## PTM-SEA
+
+::: {.callout-note}
+### Curated PTM signatures
+
+PTM-SEA tests PTMsigDB signatures, including curated kinase substrates,
+pathways, perturbations, and disease-associated PTM sets. The sites are ordered
+by the analysis statistic and tested with pre-ranked GSEA. A significant NES
+indicates coordinated movement of sites belonging to that curated signature.
+:::
+
+PTM-SEA is useful when a biological process or known kinase-substrate signature
+is represented in PTMsigDB. Coverage is limited to annotated sites.
+
+## Kinase GSEA
+
+::: {.callout-note}
+### Predicted kinase-substrate sets
+
+Kinase GSEA uses Kinase Library sequence-motif assignments as gene sets, then
+tests those sets against the ranked sites with clusterProfiler's GSEA backend.
+One site can be assigned to several kinases because related kinases can prefer
+similar sequence motifs.
+:::
+
+The result supports a kinase-activity hypothesis based on coordinated substrate
+behaviour. It does not measure kinase abundance or prove a direct
+kinase-substrate relationship.
+
+## MEA
+
+::: {.callout-note}
+### Native motif enrichment analysis
+
+MEA scores each site's ±7-residue sequence window with the Python Kinase Library
+models, forms a predicted substrate set for each kinase at the configured motif
+percentile, and runs pre-ranked enrichment with GSEApy. The JSON preserves the
+native MEA statistics and site membership used in this report.
+:::
+
+Kinases in the same family often have highly overlapping motifs. MEA can
+therefore indicate an active motif class more strongly than one uniquely
+identified kinase.
 
 :::
 
@@ -935,7 +908,6 @@ provenance <- data.frame(
     "Tools",
     "FDR threshold",
     "Top terms per summary plot",
-    "Running-score terms per contrast",
     "Report package",
     "Generated at",
     "Qmd source"
@@ -947,7 +919,6 @@ provenance <- data.frame(
     paste(unname(method_labels), collapse = "; "),
     format(fdr_threshold),
     top_terms,
-    running_terms,
     paste0("protsea ", utils::packageVersion("protsea")),
     generated_at,
     qmd_source

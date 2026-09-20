@@ -18,7 +18,10 @@ test_that("PTM report renders shared JSON without rerunning enrichment", {
   skip_if_not(file.exists(path), "QMD source is not installed with the package")
   source <- paste(readLines(path, warn = FALSE), collapse = "\n")
 
-  top_tabs <- c("# Overview", "# PTM-SEA", "# Kinase GSEA", "# MEA", "# Session Info")
+  top_tabs <- c(
+    "# Overview", "# PTM-SEA", "# Kinase GSEA", "# MEA",
+    "# About methods", "# Session Info"
+  )
   positions <- vapply(top_tabs, function(tab) regexpr(tab, source, fixed = TRUE)[[1]], integer(1))
 
   expect_true(all(positions > 0L))
@@ -27,7 +30,7 @@ test_that("PTM report renders shared JSON without rerunning enrichment", {
   expect_match(source, "protsea::decode_gsea_json", fixed = TRUE)
   expect_match(source, "enrichplot::dotplot", fixed = TRUE)
   expect_match(source, "enrichplot::ridgeplot", fixed = TRUE)
-  expect_match(source, "enrichplot::gseaplot2", fixed = TRUE)
+  expect_false(grepl("## Running score", source, fixed = TRUE))
   expect_false(grepl("clusterProfiler::GSEA(", source, fixed = TRUE))
   expect_false(grepl("fgsea::fgsea", source, fixed = TRUE))
 })
