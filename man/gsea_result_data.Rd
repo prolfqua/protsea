@@ -21,6 +21,9 @@ A list with \code{data} and \code{rank_lists}, suitable for MuData \code{uns} or
 Extends the STRING \code{data} / \code{rank_lists} structure with a category-level
 \code{gsea_result} block containing native statistics, gene sets and parameters.
 The pool's integer \code{rank} preserves input order, including tied scores.
+Every native block also stores the running enrichment score and one-based
+hit positions for each term. These fields have the same representation for
+every producer.
 Identifiers are retained exactly as submitted; no biological ID mapping is
 performed. Permutation matrices are not stored.
 }

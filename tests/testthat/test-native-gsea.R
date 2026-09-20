@@ -17,6 +17,7 @@ test_that("native GSEA statistics and running scores survive JSON", {
   expect_equal(nrow(original@result), 2)
   expect_true(any(original@result$NES > 0) && any(original@result$NES < 0))
   doc <- gsea_result_data(list(A_vs_B = original), "PTMSEA")
+  native <- doc$data$A_vs_B$categories$PTMSEA$gsea_result
   json <- jsonlite::toJSON(doc, auto_unbox = TRUE, digits = NA, na = "null")
   restored <- decode_gsea_json(json)$A_vs_B$PTMSEA
   expect_equal(restored@result, original@result)
@@ -27,6 +28,20 @@ test_that("native GSEA statistics and running scores survive JSON", {
   gs_info <- utils::getFromNamespace("gsInfo", "enrichplot")
   for (id in original@result$ID) {
     expect_equal(gs_info(restored, id), gs_info(original, id))
+    source_trace <- DOSE:::gseaScores(
+      original@geneList,
+      original@geneSets[[id]],
+      exponent = original@params$exponent,
+      fortify = FALSE
+    )$runningES
+    expect_equal(
+      unlist(native$running_scores[[id]], use.names = FALSE),
+      source_trace$runningScore
+    )
+    expect_equal(
+      unlist(native$hit_indices[[id]], use.names = FALSE),
+      which(source_trace$position == 1L)
+    )
   }
   expect_silent(enrichplot::gseaplot2(restored, geneSetID = original@result$ID[[1]]))
   path <- tempfile(fileext = ".json")
@@ -72,4 +87,42 @@ test_that("STRING conversions do not invent native statistics", {
   expect_true(all(is.na(gr@result$pvalue)))
   expect_error(decode_gsea_json('{"data":{"A":{"contrast":"A","categories":{"X":{}}}}}'),
                "Native gsea_result")
+})
+
+test_that("GSEApy MEA uses the same native GSEA JSON structure", {
+  path <- test_path("fixtures/gseapy-mea.json")
+  document <- jsonlite::fromJSON(path, simplifyVector = FALSE)
+  native <- document$data$A_vs_B$categories$MEA$gsea_result
+  restored <- decode_gsea_json(path)$A_vs_B$MEA
+
+  expect_s4_class(restored, "gseaResult")
+  expect_identical(
+    names(restored@result),
+    c(
+      "ID", "Description", "setSize", "enrichmentScore", "NES", "pvalue",
+      "p.adjust", "qvalues", "rank", "leading_edge", "core_enrichment"
+    )
+  )
+  expect_equal(restored@params$exponent, 1.5)
+  expect_equal(names(restored@geneList), paste0("g", seq_len(16L)))
+  expect_setequal(names(restored@geneSets), c("positive", "negative"))
+
+  for (id in restored@result$ID) {
+    reproduced <- DOSE:::gseaScores(
+      restored@geneList,
+      restored@geneSets[[id]],
+      exponent = restored@params$exponent,
+      fortify = FALSE
+    )$runningES
+    expect_equal(
+      unlist(native$running_scores[[id]], use.names = FALSE),
+      reproduced$runningScore,
+      tolerance = 1e-12
+    )
+    expect_equal(
+      unlist(native$hit_indices[[id]], use.names = FALSE),
+      which(reproduced$position == 1L)
+    )
+  }
+  expect_silent(enrichplot::gseaplot2(restored, geneSetID = 1L))
 })
