@@ -12,6 +12,20 @@ native_gsea <- function() {
   ))
 }
 
+expected_gsea_trace <- function(ranks, members, exponent) {
+  hits <- names(ranks) %in% members
+  weights <- abs(ranks)^exponent
+  increments <- ifelse(
+    hits,
+    weights / sum(weights[hits]),
+    -1 / sum(!hits)
+  )
+  data.frame(
+    runningScore = cumsum(increments),
+    position = as.integer(hits)
+  )
+}
+
 test_that("native GSEA statistics and running scores survive JSON", {
   original <- native_gsea()
   expect_equal(nrow(original@result), 2)
@@ -28,12 +42,11 @@ test_that("native GSEA statistics and running scores survive JSON", {
   gs_info <- utils::getFromNamespace("gsInfo", "enrichplot")
   for (id in original@result$ID) {
     expect_equal(gs_info(restored, id), gs_info(original, id))
-    source_trace <- DOSE:::gseaScores(
+    source_trace <- expected_gsea_trace(
       original@geneList,
       original@geneSets[[id]],
-      exponent = original@params$exponent,
-      fortify = FALSE
-    )$runningES
+      exponent = original@params$exponent
+    )
     expect_equal(
       unlist(native$running_scores[[id]], use.names = FALSE),
       source_trace$runningScore
@@ -108,12 +121,11 @@ test_that("GSEApy MEA uses the same native GSEA JSON structure", {
   expect_setequal(names(restored@geneSets), c("positive", "negative"))
 
   for (id in restored@result$ID) {
-    reproduced <- DOSE:::gseaScores(
+    reproduced <- expected_gsea_trace(
       restored@geneList,
       restored@geneSets[[id]],
-      exponent = restored@params$exponent,
-      fortify = FALSE
-    )$runningES
+      exponent = restored@params$exponent
+    )
     expect_equal(
       unlist(native$running_scores[[id]], use.names = FALSE),
       reproduced$runningScore,
