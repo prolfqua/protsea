@@ -239,6 +239,7 @@ ul.task-list li input[type="checkbox"] {
 <li>Promote the STRING JSON readers, plotting conversions, and report templates from stringdbpy/stringGSEAplot into the standalone protsea package.</li>
 <li>Write clusterProfiler GSEA results to the existing JSON structure with native statistics, complete gene sets, ranking order, and parameters; reconstruct running-score plots after serialization.</li>
 <li>Stop deriving artificial NES values from STRING FDR values.</li>
+<li>Verify running-score round trips without relying on the private <code>DOSE::gseaScores</code> implementation, which moved to enrichit in Bioconductor 3.23.</li>
 </ul>
 
 
