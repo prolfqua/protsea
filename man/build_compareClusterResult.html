@@ -249,7 +249,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <!-- main -->
 <main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../man/build_compareClusterResult.html">Reference</a></li><li class="breadcrumb-item"><a href="../man/build_compareClusterResult.html">build_compareClusterResult</a></li></ol></nav></header><section id="build-a-compareclusterresult-from-multiple-contrasts" class="level2 unnumbered"><h2 class="unnumbered anchored" data-anchor-id="build-a-compareclusterresult-from-multiple-contrasts">Build a compareClusterResult from multiple contrasts</h2>
 <section id="description" class="level3"><h3 class="anchored" data-anchor-id="description">Description</h3>
-<p>Merges <code>enrichResult</code> objects across contrasts (for a single category) into a DOSE::compareClusterResult object. This enables cross-contrast comparison plots from enrichplot (e.g., <code>dotplot()</code>, <code>emapplot()</code>).</p>
+<p>Merges <code>enrichResult</code> objects across contrasts (for a single category) into a <code>compareClusterResult</code> object. This enables cross-contrast comparison plots from enrichplot (e.g., <code>dotplot()</code>, <code>emapplot()</code>).</p>
 </section><section id="usage" class="level3"><h3 class="anchored" data-anchor-id="usage">Usage</h3>
 <pre><code class="language-R">build_compareClusterResult(result_list)
 </code></pre>
@@ -259,10 +259,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <code id="result_list">result_list</code>
 </td>
 <td>
-Named list of DOSE::enrichResult objects, one per contrast. Names are used as cluster labels.
+Named list of <code>enrichResult</code> objects, one per contrast. Names are used as cluster labels.
 </td>
 </tr></tbody></table></section><section id="value" class="level3"><h3 class="anchored" data-anchor-id="value">Value</h3>
-<p>A DOSE::compareClusterResult object.</p>
+<p>A <code>compareClusterResult</code> object.</p>
 </section><section id="examples" class="level3"><h3 class="anchored" data-anchor-id="examples">Examples</h3>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="st"><a href="https://github.com/prolfqua/protsea">"protsea"</a></span><span class="op">)</span></span>

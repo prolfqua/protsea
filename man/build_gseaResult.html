@@ -238,7 +238,7 @@ ul.task-list li input[type="checkbox"] {
 <h2 class="unnumbered anchored" data-anchor-id="build-a-gsearesult-s4-object-from-one-categorys-json-data">Build a gseaResult S4 object from one category’s JSON data</h2>
 <section id="description" class="level3">
 <h3 class="anchored" data-anchor-id="description">Description</h3>
-<p>Constructs a DOSE::gseaResult suitable for <code>enrichplot::ridgeplot()</code> and other GSEA-specific visualisations. Native <code>gsea_result</code> extensions restore the original statistics. STRING-only results have missing ES/NES and p-values; their ridgeplot is a descriptive view of mapped members. The ranked gene list is taken from the <code>input_value</code> field of <code>gene_pool</code>; term genes become <code>core_enrichment</code>.</p>
+<p>Constructs a <code>gseaResult</code> suitable for <code>enrichplot::ridgeplot()</code> and other GSEA-specific visualisations. Native <code>gsea_result</code> extensions restore the original statistics. STRING-only results have missing ES/NES and p-values; their ridgeplot is a descriptive view of mapped members. The ranked gene list is taken from the <code>input_value</code> field of <code>gene_pool</code>; term genes become <code>core_enrichment</code>.</p>
 </section>
 <section id="usage" class="level3">
 <h3 class="anchored" data-anchor-id="usage">Usage</h3>
@@ -276,7 +276,7 @@ Named list from rank_lists for this contrast.
 </section>
 <section id="value" class="level3">
 <h3 class="anchored" data-anchor-id="value">Value</h3>
-<p>A DOSE::gseaResult object.</p>
+<p>A <code>gseaResult</code> object.</p>
 
 
 </section>

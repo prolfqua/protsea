@@ -37,7 +37,7 @@
     "href": "man/read_gsea_json.html",
     "title": "protsea",
     "section": "",
-    "text": "Reads a JSON file produced by the string-gsea Python pipeline (GSEAResult.to_json()) and constructs one DOSE::enrichResult object per contrast-category combination.\n\nread_gsea_json(json_path)\n\n\n\n\njson_path\n\n\nPath to the JSON file.\n\n\nA double-nested named list: result[[“contrast”]][[“category”]], where each leaf is an DOSE::enrichResult object.\n\n\nlibrary(\"protsea\")\n\nresults &lt;- read_gsea_json(\"WU2848501_gsea_result.json\")\nnames(results)  # contrast names\nnames(results[[1]])  # category names\nenrichplot::dotplot(results[[1]][[\"SMART\"]])",
+    "text": "Reads a JSON file produced by the string-gsea Python pipeline (GSEAResult.to_json()) and constructs one enrichResult object per contrast-category combination.\n\nread_gsea_json(json_path)\n\n\n\n\njson_path\n\n\nPath to the JSON file.\n\n\nA double-nested named list: result[[“contrast”]][[“category”]], where each leaf is an enrichResult object.\n\n\nlibrary(\"protsea\")\n\nresults &lt;- read_gsea_json(\"WU2848501_gsea_result.json\")\nnames(results)  # contrast names\nnames(results[[1]])  # category names\nenrichplot::dotplot(results[[1]][[\"SMART\"]])",
     "crumbs": [
       "Reference",
       "read_gsea_json"
@@ -48,7 +48,7 @@
     "href": "man/read_gsea_json.html#read-a-string-gsea-json-file-and-return-enrichresult-objects",
     "title": "protsea",
     "section": "",
-    "text": "Reads a JSON file produced by the string-gsea Python pipeline (GSEAResult.to_json()) and constructs one DOSE::enrichResult object per contrast-category combination.\n\nread_gsea_json(json_path)\n\n\n\n\njson_path\n\n\nPath to the JSON file.\n\n\nA double-nested named list: result[[“contrast”]][[“category”]], where each leaf is an DOSE::enrichResult object.\n\n\nlibrary(\"protsea\")\n\nresults &lt;- read_gsea_json(\"WU2848501_gsea_result.json\")\nnames(results)  # contrast names\nnames(results[[1]])  # category names\nenrichplot::dotplot(results[[1]][[\"SMART\"]])",
+    "text": "Reads a JSON file produced by the string-gsea Python pipeline (GSEAResult.to_json()) and constructs one enrichResult object per contrast-category combination.\n\nread_gsea_json(json_path)\n\n\n\n\njson_path\n\n\nPath to the JSON file.\n\n\nA double-nested named list: result[[“contrast”]][[“category”]], where each leaf is an enrichResult object.\n\n\nlibrary(\"protsea\")\n\nresults &lt;- read_gsea_json(\"WU2848501_gsea_result.json\")\nnames(results)  # contrast names\nnames(results[[1]])  # category names\nenrichplot::dotplot(results[[1]][[\"SMART\"]])",
     "crumbs": [
       "Reference",
       "read_gsea_json"
@@ -59,7 +59,7 @@
     "href": "man/decode_gsea_json.html",
     "title": "protsea",
     "section": "",
-    "text": "Decodes a JSON string (including a string read from MuData uns) or a file written with write_gsea_result_json(). Categories must contain the native gsea_result extension. For STRING enrichment tables use read_gsea_json().\n\n\n\ndecode_gsea_json(json)\n\n\n\n\n\n\n\njson\n\n\nJSON text or a JSON file path.\n\n\n\n\n\n\nNamed nested list, indexed by contrast and category, of DOSE::gseaResult objects.",
+    "text": "Decodes a JSON string (including a string read from MuData uns) or a file written with write_gsea_result_json(). Categories must contain the native gsea_result extension. For STRING enrichment tables use read_gsea_json().\n\n\n\ndecode_gsea_json(json)\n\n\n\n\n\n\n\njson\n\n\nJSON text or a JSON file path.\n\n\n\n\n\n\nNamed nested list, indexed by contrast and category, of gseaResult objects.",
     "crumbs": [
       "Reference",
       "decode_gsea_json"
@@ -70,7 +70,7 @@
     "href": "man/decode_gsea_json.html#reconstruct-native-gsea-results-from-json",
     "title": "protsea",
     "section": "",
-    "text": "Decodes a JSON string (including a string read from MuData uns) or a file written with write_gsea_result_json(). Categories must contain the native gsea_result extension. For STRING enrichment tables use read_gsea_json().\n\n\n\ndecode_gsea_json(json)\n\n\n\n\n\n\n\njson\n\n\nJSON text or a JSON file path.\n\n\n\n\n\n\nNamed nested list, indexed by contrast and category, of DOSE::gseaResult objects.",
+    "text": "Decodes a JSON string (including a string read from MuData uns) or a file written with write_gsea_result_json(). Categories must contain the native gsea_result extension. For STRING enrichment tables use read_gsea_json().\n\n\n\ndecode_gsea_json(json)\n\n\n\n\n\n\n\njson\n\n\nJSON text or a JSON file path.\n\n\n\n\n\n\nNamed nested list, indexed by contrast and category, of gseaResult objects.",
     "crumbs": [
       "Reference",
       "decode_gsea_json"
@@ -81,7 +81,7 @@
     "href": "man/build_enrichResult.html",
     "title": "protsea",
     "section": "",
-    "text": "Build an enrichResult S4 object from one category’s JSON data\n\n\n\nbuild_enrichResult(category_data, gene_pool, rank_list)\n\n\n\n\n\n\n\ncategory_data\n\n\nList from JSON for one category (has fields: category, contrast, terms).\n\n\n\n\ngene_pool\n\n\nNamed list from the JSON gene_pool for this contrast.\n\n\n\n\nrank_list\n\n\nNamed list from rank_lists for this contrast (has fields: contrast, entries).\n\n\n\n\n\n\nAn DOSE::enrichResult object.",
+    "text": "Build an enrichResult S4 object from one category’s JSON data\n\n\n\nbuild_enrichResult(category_data, gene_pool, rank_list)\n\n\n\n\n\n\n\ncategory_data\n\n\nList from JSON for one category (has fields: category, contrast, terms).\n\n\n\n\ngene_pool\n\n\nNamed list from the JSON gene_pool for this contrast.\n\n\n\n\nrank_list\n\n\nNamed list from rank_lists for this contrast (has fields: contrast, entries).\n\n\n\n\n\n\nAn enrichResult object.",
     "crumbs": [
       "Reference",
       "build_enrichResult"
@@ -92,7 +92,7 @@
     "href": "man/build_enrichResult.html#build-an-enrichresult-s4-object-from-one-categorys-json-data",
     "title": "protsea",
     "section": "",
-    "text": "Build an enrichResult S4 object from one category’s JSON data\n\n\n\nbuild_enrichResult(category_data, gene_pool, rank_list)\n\n\n\n\n\n\n\ncategory_data\n\n\nList from JSON for one category (has fields: category, contrast, terms).\n\n\n\n\ngene_pool\n\n\nNamed list from the JSON gene_pool for this contrast.\n\n\n\n\nrank_list\n\n\nNamed list from rank_lists for this contrast (has fields: contrast, entries).\n\n\n\n\n\n\nAn DOSE::enrichResult object.",
+    "text": "Build an enrichResult S4 object from one category’s JSON data\n\n\n\nbuild_enrichResult(category_data, gene_pool, rank_list)\n\n\n\n\n\n\n\ncategory_data\n\n\nList from JSON for one category (has fields: category, contrast, terms).\n\n\n\n\ngene_pool\n\n\nNamed list from the JSON gene_pool for this contrast.\n\n\n\n\nrank_list\n\n\nNamed list from rank_lists for this contrast (has fields: contrast, entries).\n\n\n\n\n\n\nAn enrichResult object.",
     "crumbs": [
       "Reference",
       "build_enrichResult"
@@ -150,7 +150,7 @@
     "href": "NEWS.html",
     "title": "protsea 0.1.0",
     "section": "",
-    "text": "protsea 0.1.0\n\nReconstruct transient GSEA result tables with term IDs as row names, including MEA documents whose source tables have automatic row names, so ridge plots resolve gene sets correctly. The JSON retains its source row names.\nAdd a separate PTM enrichment QMD for one analysis document containing PTM-SEA, Kinase GSEA, and MEA. The report reconstructs every plot from the shared JSON and uses 96 DPI without retina scaling to keep its self-contained HTML compact.\nStore per-term source running enrichment scores and one-based hit positions in the shared native GSEA block, including documents produced by GSEApy MEA, while reconstructing the same transient clusterProfiler object for plotting.\nKeep the single round-trip vignette visible in the generated website’s Articles navigation.\nAdd a Quarto vignette demonstrating an fgsea-backed clusterProfiler analysis, JSON serialization and reconstruction, equality checks, and plots made from the reconstructed result. Build package documentation with altdoc’s Quarto website backend.\nBuild the compact round-trip article as the package vignette. Ship GSEA_report.qmd as an installed runtime report template without executing its 112 MB example during every vignette or documentation build.\nConstruct DOSE result classes from their registered definitions, supporting releases where those S4 classes are not namespace exports.\nPromote the STRING JSON readers, plotting conversions, and report templates from stringdbpy/stringGSEAplot into the standalone protsea package.\nWrite clusterProfiler GSEA results to the existing JSON structure with native statistics, complete gene sets, ranking order, and parameters; reconstruct running-score plots after serialization.\nStop deriving artificial NES values from STRING FDR values.\nVerify running-score round trips without relying on the private DOSE::gseaScores implementation, which moved to enrichit in Bioconductor 3.23.",
+    "text": "protsea 0.1.0\n\nWork with DOSE 4.6, which moved the enrichment classes and geneInCategory() into the enrichit package. The documentation no longer links to class help pages that the split relocated, and the tests resolve the accessor from whichever package provides it, so protsea runs on both the old and the new stack.\nReconstruct transient GSEA result tables with term IDs as row names, including MEA documents whose source tables have automatic row names, so ridge plots resolve gene sets correctly. The JSON retains its source row names.\nAdd a separate PTM enrichment QMD for one analysis document containing PTM-SEA, Kinase GSEA, and MEA. The report reconstructs every plot from the shared JSON and uses 96 DPI without retina scaling to keep its self-contained HTML compact.\nStore per-term source running enrichment scores and one-based hit positions in the shared native GSEA block, including documents produced by GSEApy MEA, while reconstructing the same transient clusterProfiler object for plotting.\nKeep the single round-trip vignette visible in the generated website’s Articles navigation.\nAdd a Quarto vignette demonstrating an fgsea-backed clusterProfiler analysis, JSON serialization and reconstruction, equality checks, and plots made from the reconstructed result. Build package documentation with altdoc’s Quarto website backend.\nBuild the compact round-trip article as the package vignette. Ship GSEA_report.qmd as an installed runtime report template without executing its 112 MB example during every vignette or documentation build.\nConstruct DOSE result classes from their registered definitions, supporting releases where those S4 classes are not namespace exports.\nPromote the STRING JSON readers, plotting conversions, and report templates from stringdbpy/stringGSEAplot into the standalone protsea package.\nWrite clusterProfiler GSEA results to the existing JSON structure with native statistics, complete gene sets, ranking order, and parameters; reconstruct running-score plots after serialization.\nStop deriving artificial NES values from STRING FDR values.\nVerify running-score round trips without relying on the private DOSE::gseaScores implementation, which moved to enrichit in Bioconductor 3.23.",
     "crumbs": [
       "News"
     ]
@@ -160,7 +160,7 @@
     "href": "man/build_compareClusterResult.html",
     "title": "protsea",
     "section": "",
-    "text": "Merges enrichResult objects across contrasts (for a single category) into a DOSE::compareClusterResult object. This enables cross-contrast comparison plots from enrichplot (e.g., dotplot(), emapplot()).\n\nbuild_compareClusterResult(result_list)\n\n\n\n\nresult_list\n\n\nNamed list of DOSE::enrichResult objects, one per contrast. Names are used as cluster labels.\n\n\nA DOSE::compareClusterResult object.\n\n\nlibrary(\"protsea\")\n\nresults &lt;- read_gsea_json(\"gsea_result.json\")\n# Extract GO Process from each contrast\ngo_list &lt;- lapply(results, function(x) x[[\"GO Process\"]])\nccr &lt;- build_compareClusterResult(go_list)\nenrichplot::dotplot(ccr, showCategory = 10)",
+    "text": "Merges enrichResult objects across contrasts (for a single category) into a compareClusterResult object. This enables cross-contrast comparison plots from enrichplot (e.g., dotplot(), emapplot()).\n\nbuild_compareClusterResult(result_list)\n\n\n\n\nresult_list\n\n\nNamed list of enrichResult objects, one per contrast. Names are used as cluster labels.\n\n\nA compareClusterResult object.\n\n\nlibrary(\"protsea\")\n\nresults &lt;- read_gsea_json(\"gsea_result.json\")\n# Extract GO Process from each contrast\ngo_list &lt;- lapply(results, function(x) x[[\"GO Process\"]])\nccr &lt;- build_compareClusterResult(go_list)\nenrichplot::dotplot(ccr, showCategory = 10)",
     "crumbs": [
       "Reference",
       "build_compareClusterResult"
@@ -171,7 +171,7 @@
     "href": "man/build_compareClusterResult.html#build-a-compareclusterresult-from-multiple-contrasts",
     "title": "protsea",
     "section": "",
-    "text": "Merges enrichResult objects across contrasts (for a single category) into a DOSE::compareClusterResult object. This enables cross-contrast comparison plots from enrichplot (e.g., dotplot(), emapplot()).\n\nbuild_compareClusterResult(result_list)\n\n\n\n\nresult_list\n\n\nNamed list of DOSE::enrichResult objects, one per contrast. Names are used as cluster labels.\n\n\nA DOSE::compareClusterResult object.\n\n\nlibrary(\"protsea\")\n\nresults &lt;- read_gsea_json(\"gsea_result.json\")\n# Extract GO Process from each contrast\ngo_list &lt;- lapply(results, function(x) x[[\"GO Process\"]])\nccr &lt;- build_compareClusterResult(go_list)\nenrichplot::dotplot(ccr, showCategory = 10)",
+    "text": "Merges enrichResult objects across contrasts (for a single category) into a compareClusterResult object. This enables cross-contrast comparison plots from enrichplot (e.g., dotplot(), emapplot()).\n\nbuild_compareClusterResult(result_list)\n\n\n\n\nresult_list\n\n\nNamed list of enrichResult objects, one per contrast. Names are used as cluster labels.\n\n\nA compareClusterResult object.\n\n\nlibrary(\"protsea\")\n\nresults &lt;- read_gsea_json(\"gsea_result.json\")\n# Extract GO Process from each contrast\ngo_list &lt;- lapply(results, function(x) x[[\"GO Process\"]])\nccr &lt;- build_compareClusterResult(go_list)\nenrichplot::dotplot(ccr, showCategory = 10)",
     "crumbs": [
       "Reference",
       "build_compareClusterResult"
@@ -182,7 +182,7 @@
     "href": "man/build_gseaResult.html",
     "title": "protsea",
     "section": "",
-    "text": "Constructs a DOSE::gseaResult suitable for enrichplot::ridgeplot() and other GSEA-specific visualisations. Native gsea_result extensions restore the original statistics. STRING-only results have missing ES/NES and p-values; their ridgeplot is a descriptive view of mapped members. The ranked gene list is taken from the input_value field of gene_pool; term genes become core_enrichment.\n\n\n\nbuild_gseaResult(category_data, gene_pool, rank_list)\n\n\n\n\n\n\n\ncategory_data\n\n\nList from JSON for one category (fields: category, contrast, terms).\n\n\n\n\ngene_pool\n\n\nNamed list from the JSON gene_pool for this contrast.\n\n\n\n\nrank_list\n\n\nNamed list from rank_lists for this contrast.\n\n\n\n\n\n\nA DOSE::gseaResult object.",
+    "text": "Constructs a gseaResult suitable for enrichplot::ridgeplot() and other GSEA-specific visualisations. Native gsea_result extensions restore the original statistics. STRING-only results have missing ES/NES and p-values; their ridgeplot is a descriptive view of mapped members. The ranked gene list is taken from the input_value field of gene_pool; term genes become core_enrichment.\n\n\n\nbuild_gseaResult(category_data, gene_pool, rank_list)\n\n\n\n\n\n\n\ncategory_data\n\n\nList from JSON for one category (fields: category, contrast, terms).\n\n\n\n\ngene_pool\n\n\nNamed list from the JSON gene_pool for this contrast.\n\n\n\n\nrank_list\n\n\nNamed list from rank_lists for this contrast.\n\n\n\n\n\n\nA gseaResult object.",
     "crumbs": [
       "Reference",
       "build_gseaResult"
@@ -193,7 +193,7 @@
     "href": "man/build_gseaResult.html#build-a-gsearesult-s4-object-from-one-categorys-json-data",
     "title": "protsea",
     "section": "",
-    "text": "Constructs a DOSE::gseaResult suitable for enrichplot::ridgeplot() and other GSEA-specific visualisations. Native gsea_result extensions restore the original statistics. STRING-only results have missing ES/NES and p-values; their ridgeplot is a descriptive view of mapped members. The ranked gene list is taken from the input_value field of gene_pool; term genes become core_enrichment.\n\n\n\nbuild_gseaResult(category_data, gene_pool, rank_list)\n\n\n\n\n\n\n\ncategory_data\n\n\nList from JSON for one category (fields: category, contrast, terms).\n\n\n\n\ngene_pool\n\n\nNamed list from the JSON gene_pool for this contrast.\n\n\n\n\nrank_list\n\n\nNamed list from rank_lists for this contrast.\n\n\n\n\n\n\nA DOSE::gseaResult object.",
+    "text": "Constructs a gseaResult suitable for enrichplot::ridgeplot() and other GSEA-specific visualisations. Native gsea_result extensions restore the original statistics. STRING-only results have missing ES/NES and p-values; their ridgeplot is a descriptive view of mapped members. The ranked gene list is taken from the input_value field of gene_pool; term genes become core_enrichment.\n\n\n\nbuild_gseaResult(category_data, gene_pool, rank_list)\n\n\n\n\n\n\n\ncategory_data\n\n\nList from JSON for one category (fields: category, contrast, terms).\n\n\n\n\ngene_pool\n\n\nNamed list from the JSON gene_pool for this contrast.\n\n\n\n\nrank_list\n\n\nNamed list from rank_lists for this contrast.\n\n\n\n\n\n\nA gseaResult object.",
     "crumbs": [
       "Reference",
       "build_gseaResult"
@@ -204,7 +204,7 @@
     "href": "man/gsea_result_data.html",
     "title": "protsea",
     "section": "",
-    "text": "Extends the STRING data / rank_lists structure with a category-level gsea_result block containing native statistics, gene sets and parameters. The pool’s integer rank preserves input order, including tied scores. Every native block also stores the running enrichment score and one-based hit positions for each term. These fields have the same representation for every producer. Identifiers are retained exactly as submitted; no biological ID mapping is performed. Permutation matrices are not stored.\n\n\n\ngsea_result_data(results, category, method = \"fgsea\")\n\n\n\n\n\n\n\nresults\n\n\nNamed list of DOSE::gseaResult objects, one per contrast.\n\n\n\n\ncategory\n\n\nGene-set collection name.\n\n\n\n\nmethod\n\n\nAlgorithm label, e.g. “fgsea” or “DOSE”.\n\n\n\n\n\n\nA list with data and rank_lists, suitable for MuData uns or write_gsea_result_json().",
+    "text": "Extends the STRING data / rank_lists structure with a category-level gsea_result block containing native statistics, gene sets and parameters. The pool’s integer rank preserves input order, including tied scores. Every native block also stores the running enrichment score and one-based hit positions for each term. These fields have the same representation for every producer. Identifiers are retained exactly as submitted; no biological ID mapping is performed. Permutation matrices are not stored.\n\n\n\ngsea_result_data(results, category, method = \"fgsea\")\n\n\n\n\n\n\n\nresults\n\n\nNamed list of gseaResult objects, one per contrast.\n\n\n\n\ncategory\n\n\nGene-set collection name.\n\n\n\n\nmethod\n\n\nAlgorithm label, e.g. “fgsea” or “DOSE”.\n\n\n\n\n\n\nA list with data and rank_lists, suitable for MuData uns or write_gsea_result_json().",
     "crumbs": [
       "Reference",
       "gsea_result_data"
@@ -215,7 +215,7 @@
     "href": "man/gsea_result_data.html#convert-clusterprofiler-gsea-results-to-shared-json-data",
     "title": "protsea",
     "section": "",
-    "text": "Extends the STRING data / rank_lists structure with a category-level gsea_result block containing native statistics, gene sets and parameters. The pool’s integer rank preserves input order, including tied scores. Every native block also stores the running enrichment score and one-based hit positions for each term. These fields have the same representation for every producer. Identifiers are retained exactly as submitted; no biological ID mapping is performed. Permutation matrices are not stored.\n\n\n\ngsea_result_data(results, category, method = \"fgsea\")\n\n\n\n\n\n\n\nresults\n\n\nNamed list of DOSE::gseaResult objects, one per contrast.\n\n\n\n\ncategory\n\n\nGene-set collection name.\n\n\n\n\nmethod\n\n\nAlgorithm label, e.g. “fgsea” or “DOSE”.\n\n\n\n\n\n\nA list with data and rank_lists, suitable for MuData uns or write_gsea_result_json().",
+    "text": "Extends the STRING data / rank_lists structure with a category-level gsea_result block containing native statistics, gene sets and parameters. The pool’s integer rank preserves input order, including tied scores. Every native block also stores the running enrichment score and one-based hit positions for each term. These fields have the same representation for every producer. Identifiers are retained exactly as submitted; no biological ID mapping is performed. Permutation matrices are not stored.\n\n\n\ngsea_result_data(results, category, method = \"fgsea\")\n\n\n\n\n\n\n\nresults\n\n\nNamed list of gseaResult objects, one per contrast.\n\n\n\n\ncategory\n\n\nGene-set collection name.\n\n\n\n\nmethod\n\n\nAlgorithm label, e.g. “fgsea” or “DOSE”.\n\n\n\n\n\n\nA list with data and rank_lists, suitable for MuData uns or write_gsea_result_json().",
     "crumbs": [
       "Reference",
       "gsea_result_data"
