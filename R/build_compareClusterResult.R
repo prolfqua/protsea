@@ -22,11 +22,16 @@ build_compareClusterResult <- function(result_list) {
   stopifnot(length(result_list) >= 2)
 
   # Merge @result data.frames, adding Cluster column
-  dfs <- mapply(function(er, nm) {
-    df <- methods::slot(er, "result")
-    df$Cluster <- nm
-    df
-  }, result_list, names(result_list), SIMPLIFY = FALSE)
+  dfs <- mapply(
+    function(er, nm) {
+      df <- methods::slot(er, "result")
+      df$Cluster <- nm
+      df
+    },
+    result_list,
+    names(result_list),
+    SIMPLIFY = FALSE
+  )
   merged <- do.call(rbind, dfs)
   merged$Cluster <- factor(merged$Cluster, levels = names(result_list))
 

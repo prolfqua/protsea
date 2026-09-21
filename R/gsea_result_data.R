@@ -15,6 +15,34 @@
   )
 }
 
+.gsea_term_entry <- function(res, i, ids, category, method) {
+  row <- res@result[i, , drop = FALSE]
+  members <- intersect(res@geneSets[[row$ID]], ids)
+  leading <- strsplit(row$core_enrichment, "/", fixed = TRUE)[[1]]
+  if (res@readable) {
+    leading <- names(res@gene2Symbol)[res@gene2Symbol %in% leading]
+  }
+  list(
+    term_id = row$ID,
+    category = category,
+    description = row$Description,
+    enrichment_score = row$NES,
+    direction = if (row$NES > 0) {
+      "top"
+    } else if (row$NES < 0) {
+      "bottom"
+    } else {
+      "both ends"
+    },
+    fdr = row$p.adjust,
+    method = method,
+    genes_mapped = length(members),
+    genes_in_set = length(res@geneSets[[row$ID]]),
+    gene_ids = as.list(members),
+    leading_edge_ids = as.list(intersect(leading, members))
+  )
+}
+
 #' Convert clusterProfiler GSEA Results to Shared JSON Data
 #'
 #' Extends the STRING `data` / `rank_lists` structure with a category-level
@@ -44,43 +72,52 @@ gsea_result_data <- function(results, category, method = "fgsea") {
     if (anyDuplicated(ids) || length(ids) != length(ranks) || any(!is.finite(ranks))) {
       stop("geneList must have unique identifiers and finite scores")
     }
-    pool <- stats::setNames(lapply(seq_along(ranks), function(i) {
-      list(protein_id = ids[[i]], label = ids[[i]], input_label = ids[[i]],
-           input_value = unname(ranks[[i]]), rank = i)
-    }), ids)
+    pool <- stats::setNames(
+      lapply(seq_along(ranks), function(i) {
+        list(
+          protein_id = ids[[i]],
+          label = ids[[i]],
+          input_label = ids[[i]],
+          input_value = unname(ranks[[i]]),
+          rank = i
+        )
+      }),
+      ids
+    )
     terms <- lapply(seq_len(nrow(res@result)), function(i) {
-      row <- res@result[i, , drop = FALSE]
-      members <- intersect(res@geneSets[[row$ID]], ids)
-      leading <- strsplit(row$core_enrichment, "/", fixed = TRUE)[[1]]
-      if (res@readable) {
-        leading <- names(res@gene2Symbol)[res@gene2Symbol %in% leading]
-      }
-      list(term_id = row$ID, category = category, description = row$Description,
-           enrichment_score = row$NES,
-           direction = if (row$NES > 0) "top" else if (row$NES < 0) "bottom" else "both ends",
-           fdr = row$p.adjust, method = method,
-           genes_mapped = length(members), genes_in_set = length(res@geneSets[[row$ID]]),
-           gene_ids = as.list(members), leading_edge_ids = as.list(intersect(leading, members)))
+      .gsea_term_entry(res, i, ids, category, method)
     })
     traces <- lapply(res@result$ID, function(id) {
       .gsea_running_trace(ranks, res@geneSets[[id]], res@params$exponent)
     })
     names(traces) <- res@result$ID
     native <- list(
-      result = list(columns = lapply(res@result, as.list),
-                    types = as.list(vapply(res@result, typeof, character(1))),
-                    row_names = as.list(rownames(res@result)),
-                    row_name_type = typeof(attr(res@result, "row.names"))),
-      gene_sets = lapply(res@geneSets, as.list), params = res@params,
+      result = list(
+        columns = lapply(res@result, as.list),
+        types = as.list(vapply(res@result, typeof, character(1))),
+        row_names = as.list(rownames(res@result)),
+        row_name_type = typeof(attr(res@result, "row.names"))
+      ),
+      gene_sets = lapply(res@geneSets, as.list),
+      params = res@params,
       param_types = as.list(vapply(res@params, typeof, character(1))),
-      organism = res@organism, set_type = res@setType, key_type = res@keytype,
-      readable = res@readable, gene2symbol = as.list(res@gene2Symbol),
+      organism = res@organism,
+      set_type = res@setType,
+      key_type = res@keytype,
+      readable = res@readable,
+      gene2symbol = as.list(res@gene2Symbol),
       running_scores = lapply(traces, `[[`, "running_scores"),
       hit_indices = lapply(traces, `[[`, "hit_indices")
     )
-    categories <- stats::setNames(list(list(
-      category = category, contrast = contrast, terms = terms, gsea_result = native
-    )), category)
+    categories <- stats::setNames(
+      list(list(
+        category = category,
+        contrast = contrast,
+        terms = terms,
+        gsea_result = native
+      )),
+      category
+    )
     list(contrast = contrast, gene_pool = pool, categories = categories)
   })
   names(data) <- names(results)

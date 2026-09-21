@@ -8,10 +8,15 @@
 #'   IDs not found in the pool are returned as-is.
 #' @keywords internal
 resolve_gene_ids <- function(gene_ids, gene_pool) {
-  vapply(gene_ids, function(gid) {
-    entry <- gene_pool[[gid]]
-    if (is.null(entry)) gid else entry[["label"]]
-  }, character(1), USE.NAMES = FALSE)
+  vapply(
+    gene_ids,
+    function(gid) {
+      entry <- gene_pool[[gid]]
+      if (is.null(entry)) gid else entry[["label"]]
+    },
+    character(1),
+    USE.NAMES = FALSE
+  )
 }
 
 

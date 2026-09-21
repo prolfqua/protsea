@@ -12,8 +12,7 @@ decode_gsea_json <- function(json) {
   document <- jsonlite::fromJSON(json, simplifyVector = FALSE)
   lapply(document$data, function(contrast) {
     lapply(contrast$categories, function(category) {
-      restore_gsea_result(category$gsea_result, contrast$gene_pool,
-                          document$rank_lists[[contrast$contrast]])
+      restore_gsea_result(category$gsea_result, contrast$gene_pool, document$rank_lists[[contrast$contrast]])
     })
   })
 }
@@ -30,7 +29,8 @@ restore_gsea_result <- function(native, gene_pool, rank_list) {
   names(columns) <- names(native$result$columns)
   result <- as.data.frame(columns, stringsAsFactors = FALSE, check.names = FALSE)
   attr(result, "row.names") <- methods::as(
-    unlist(native$result$row_names, use.names = FALSE), native$result$row_name_type
+    unlist(native$result$row_names, use.names = FALSE),
+    native$result$row_name_type
   )
   # DOSE::geneInCategory.gseaResult uses these names as term IDs. Data frames
   # produced outside clusterProfiler often have automatic integer row names;
@@ -44,7 +44,9 @@ restore_gsea_result <- function(native, gene_pool, rank_list) {
   names(ranks) <- ids
   gene_sets <- lapply(native$gene_sets, function(x) as.character(unlist(x, use.names = FALSE)))
   symbols <- unlist(native$gene2symbol, use.names = TRUE)
-  if (!length(symbols)) symbols <- character()
+  if (!length(symbols)) {
+    symbols <- character()
+  }
   params <- lapply(names(native$params), function(name) {
     value <- unlist(native$params[[name]], use.names = TRUE)
     if (!is.null(native$param_types[[name]])) {
@@ -55,10 +57,15 @@ restore_gsea_result <- function(native, gene_pool, rank_list) {
   names(params) <- names(native$params)
   methods::new(
     methods::getClass("gseaResult", where = asNamespace("DOSE")),
-    result = result, geneList = ranks, geneSets = gene_sets,
+    result = result,
+    geneList = ranks,
+    geneSets = gene_sets,
     params = params,
-    organism = native$organism, setType = native$set_type, keytype = native$key_type,
-    readable = native$readable, gene2Symbol = symbols,
+    organism = native$organism,
+    setType = native$set_type,
+    keytype = native$key_type,
+    readable = native$readable,
+    gene2Symbol = symbols,
     permScores = matrix(nrow = 0, ncol = 0)
   )
 }

@@ -1,6 +1,7 @@
 test_that("PTM report fixture contains every enrichment tool", {
   path <- system.file(
-    "extdata", "PTM_DPA_gsea_result.json.gz",
+    "extdata",
+    "PTM_DPA_gsea_result.json.gz",
     package = "protsea"
   )
   expect_true(nzchar(path))
@@ -19,8 +20,12 @@ test_that("PTM report renders shared JSON without rerunning enrichment", {
   source <- paste(readLines(path, warn = FALSE), collapse = "\n")
 
   top_tabs <- c(
-    "# Overview", "# PTM-SEA", "# Kinase GSEA", "# MEA",
-    "# About methods", "# Session Info"
+    "# Overview",
+    "# PTM-SEA",
+    "# Kinase GSEA",
+    "# MEA",
+    "# About methods",
+    "# Session Info"
   )
   positions <- vapply(top_tabs, function(tab) regexpr(tab, source, fixed = TRUE)[[1]], integer(1))
 

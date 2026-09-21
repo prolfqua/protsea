@@ -1,13 +1,20 @@
 native_gsea <- function() {
   # Include a tie, both signs and a non-default exponent.
-  ranks <- stats::setNames(c(8, 7, 7, 5, 4, 3, 2, 1, -1, -2, -3, -4, -5, -6, -7, -8),
-                          paste0("g", seq_len(16)))
-  sets <- data.frame(term = rep(c("positive", "negative"), each = 4),
-                     gene = names(ranks)[c(1, 2, 4, 6, 11, 13, 15, 16)])
+  ranks <- stats::setNames(c(8, 7, 7, 5, 4, 3, 2, 1, -1, -2, -3, -4, -5, -6, -7, -8), paste0("g", seq_len(16)))
+  sets <- data.frame(
+    term = rep(c("positive", "negative"), each = 4),
+    gene = names(ranks)[c(1, 2, 4, 6, 11, 13, 15, 16)]
+  )
   set.seed(42)
   suppressWarnings(clusterProfiler::GSEA(
-    ranks, exponent = 1.5, minGSSize = 2, maxGSSize = 10,
-    pvalueCutoff = 1, TERM2GENE = sets, verbose = FALSE, seed = TRUE,
+    ranks,
+    exponent = 1.5,
+    minGSSize = 2,
+    maxGSSize = 10,
+    pvalueCutoff = 1,
+    TERM2GENE = sets,
+    verbose = FALSE,
+    seed = TRUE,
     nPermSimple = 100
   ))
 }
@@ -62,8 +69,7 @@ test_that("native GSEA statistics and running scores survive JSON", {
   write_gsea_result_json(doc, path)
   expect_equal(decode_gsea_json(path)$A_vs_B$PTMSEA@result, original@result)
   raw <- attr(read_gsea_json(path), "raw_data")$A_vs_B
-  expect_equal(build_gseaResult(raw$cats$PTMSEA, raw$gene_pool, raw$rank_list)@result,
-               original@result)
+  expect_equal(build_gseaResult(raw$cats$PTMSEA, raw$gene_pool, raw$rank_list)@result, original@result)
 })
 
 test_that("order is taken from rank positions, not JSON object key order", {
@@ -83,8 +89,7 @@ test_that("order is taken from rank positions, not JSON object key order", {
 test_that("empty results and readable identifiers round-trip", {
   original <- native_gsea()
   original@result <- original@result[FALSE, ]
-  original@gene2Symbol <- stats::setNames(paste0("symbol", seq_along(original@geneList)),
-                                         names(original@geneList))
+  original@gene2Symbol <- stats::setNames(paste0("symbol", seq_along(original@geneList)), names(original@geneList))
   original@readable <- TRUE
   doc <- gsea_result_data(list(A = original), "test")
   restored <- decode_gsea_json(jsonlite::toJSON(doc, auto_unbox = TRUE, digits = NA))$A$test
@@ -99,8 +104,7 @@ test_that("STRING conversions do not invent native statistics", {
   gr <- build_gseaResult(raw$cats[[1]], raw$gene_pool, raw$rank_list)
   expect_true(all(is.na(gr@result$NES)))
   expect_true(all(is.na(gr@result$pvalue)))
-  expect_error(decode_gsea_json('{"data":{"A":{"contrast":"A","categories":{"X":{}}}}}'),
-               "Native gsea_result")
+  expect_error(decode_gsea_json('{"data":{"A":{"contrast":"A","categories":{"X":{}}}}}'), "Native gsea_result")
 })
 
 test_that("GSEApy MEA uses the same native GSEA JSON structure", {
@@ -113,8 +117,17 @@ test_that("GSEApy MEA uses the same native GSEA JSON structure", {
   expect_identical(
     names(restored@result),
     c(
-      "ID", "Description", "setSize", "enrichmentScore", "NES", "pvalue",
-      "p.adjust", "qvalues", "rank", "leading_edge", "core_enrichment"
+      "ID",
+      "Description",
+      "setSize",
+      "enrichmentScore",
+      "NES",
+      "pvalue",
+      "p.adjust",
+      "qvalues",
+      "rank",
+      "leading_edge",
+      "core_enrichment"
     )
   )
   expect_equal(restored@params$exponent, 1.5)

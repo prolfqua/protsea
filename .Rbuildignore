@@ -17,3 +17,5 @@
 ^CLAUDE\.md$
 ^altdoc$
 ^_quarto$
+^\.lintr$
+^air\.toml$

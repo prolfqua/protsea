@@ -1,6 +1,5 @@
 get_test_json <- function() {
-  system.file("extdata", "WU2848501_gsea_result.json.gz",
-              package = "protsea")
+  system.file("extdata", "WU2848501_gsea_result.json.gz", package = "protsea")
 }
 
 test_that("read_gsea_json returns double-nested list of enrichResult", {
@@ -35,8 +34,7 @@ test_that("enrichResult has expected slots and structure", {
   # @result is a data.frame with required columns
   res_df <- slot(er, "result")
   expect_s3_class(res_df, "data.frame")
-  expected_cols <- c("ID", "Description", "GeneRatio", "pvalue", "p.adjust",
-                     "qvalue", "geneID", "Count")
+  expected_cols <- c("ID", "Description", "GeneRatio", "pvalue", "p.adjust", "qvalue", "geneID", "Count")
   for (col in expected_cols) {
     expect_true(col %in% names(res_df), info = paste("Missing column:", col))
   }
@@ -78,7 +76,6 @@ test_that("all contrasts and categories are present", {
 
   # Each contrast should have multiple categories
   for (contrast_name in names(results)) {
-    expect_true(length(results[[contrast_name]]) > 1,
-                info = paste("Contrast", contrast_name, "has too few categories"))
+    expect_true(length(results[[contrast_name]]) > 1, info = paste("Contrast", contrast_name, "has too few categories"))
   }
 })

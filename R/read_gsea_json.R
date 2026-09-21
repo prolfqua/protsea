@@ -23,7 +23,8 @@ read_gsea_json <- function(json_path) {
   missing <- setdiff(required_keys, names(json_data))
   if (length(missing) > 0) {
     stop(
-      "JSON is missing required keys: ", paste(missing, collapse = ", "),
+      "JSON is missing required keys: ",
+      paste(missing, collapse = ", "),
       ". Re-run the pipeline with a current version of string_gsea to ",
       "produce a complete JSON file.",
       call. = FALSE
@@ -34,28 +35,28 @@ read_gsea_json <- function(json_path) {
   rank_lists <- json_data[["rank_lists"]]
 
   result_list <- list()
-  raw_data    <- list()
+  raw_data <- list()
 
   for (contrast_name in names(contrasts_data)) {
-    contrast  <- contrasts_data[[contrast_name]]
+    contrast <- contrasts_data[[contrast_name]]
     gene_pool <- contrast[["gene_pool"]]
     rank_list <- rank_lists[[contrast_name]]
-    cats      <- contrast[["categories"]]
+    cats <- contrast[["categories"]]
 
     contrast_results <- list()
     for (cat_name in names(cats)) {
       cat_data <- cats[[cat_name]]
-      if (length(cat_data[["terms"]]) == 0) next
+      if (length(cat_data[["terms"]]) == 0) {
+        next
+      }
       contrast_results[[cat_name]] <- build_enrichResult(cat_data, gene_pool, rank_list)
     }
     result_list[[contrast_name]] <- contrast_results
-    raw_data[[contrast_name]]    <- list(gene_pool = gene_pool,
-                                         rank_list = rank_list,
-                                         cats      = cats)
+    raw_data[[contrast_name]] <- list(gene_pool = gene_pool, rank_list = rank_list, cats = cats)
   }
 
   attr(result_list, "metadata") <- json_data[["metadata"]]
-  attr(result_list, "links")    <- json_data[["links"]]
+  attr(result_list, "links") <- json_data[["links"]]
   attr(result_list, "raw_data") <- raw_data
 
   result_list

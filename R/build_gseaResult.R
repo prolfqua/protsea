@@ -29,28 +29,28 @@ build_gseaResult <- function(category_data, gene_pool, rank_list) {
 
   rows <- lapply(terms, function(term) {
     gene_ids <- unlist(term[["gene_ids"]])
-    labels   <- resolve_gene_ids(gene_ids, gene_pool)
-    fdr_val  <- as.numeric(term[["fdr"]])
-    k        <- as.integer(term[["genes_mapped"]])
+    labels <- resolve_gene_ids(gene_ids, gene_pool)
+    fdr_val <- as.numeric(term[["fdr"]])
+    k <- as.integer(term[["genes_mapped"]])
 
     # STRING does not provide native GSEA ES/NES or unadjusted p-values.
     nes <- NA_real_
 
     gene_ranks <- match(labels, names(gene_list))
-    med_rank   <- as.integer(stats::median(gene_ranks[!is.na(gene_ranks)]))
+    med_rank <- as.integer(stats::median(gene_ranks[!is.na(gene_ranks)]))
 
     data.frame(
-      ID               = term[["term_id"]],
-      Description      = term[["description"]],
-      setSize          = k,
-      enrichmentScore  = nes,
-      NES              = nes,
-      pvalue           = NA_real_,
-      p.adjust         = fdr_val,
-      qvalues          = NA_real_,
-      rank             = med_rank,
-      leading_edge     = paste0("tags=", k, ", list=", length(gene_list)),
-      core_enrichment  = paste(labels, collapse = "/"),
+      ID = term[["term_id"]],
+      Description = term[["description"]],
+      setSize = k,
+      enrichmentScore = nes,
+      NES = nes,
+      pvalue = NA_real_,
+      p.adjust = fdr_val,
+      qvalues = NA_real_,
+      rank = med_rank,
+      leading_edge = paste0("tags=", k, ", list=", length(gene_list)),
+      core_enrichment = paste(labels, collapse = "/"),
       stringsAsFactors = FALSE
     )
   })
@@ -65,16 +65,15 @@ build_gseaResult <- function(category_data, gene_pool, rank_list) {
 
   methods::new(
     methods::getClass("gseaResult", where = asNamespace("DOSE")),
-    result      = result_df,
-    organism    = "unknown",
-    setType     = category_data[["category"]],
-    geneSets    = gene_sets,
-    geneList    = gene_list,
-    keytype     = "STRING",
-    permScores  = matrix(nrow = 0, ncol = 0),
-    params      = list(pvalueCutoff = 1.0, pAdjustMethod = "BH",
-                       minGSSize = 1L, maxGSSize = 500L, exponent = 1L),
+    result = result_df,
+    organism = "unknown",
+    setType = category_data[["category"]],
+    geneSets = gene_sets,
+    geneList = gene_list,
+    keytype = "STRING",
+    permScores = matrix(nrow = 0, ncol = 0),
+    params = list(pvalueCutoff = 1.0, pAdjustMethod = "BH", minGSSize = 1L, maxGSSize = 500L, exponent = 1L),
     gene2Symbol = character(0),
-    readable    = TRUE
+    readable = TRUE
   )
 }
