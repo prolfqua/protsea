@@ -76,7 +76,8 @@ test_that("order is taken from rank positions, not JSON object key order", {
   json <- jsonlite::toJSON(doc, auto_unbox = TRUE, digits = NA)
   restored <- decode_gsea_json(json)$A$test
   expect_equal(restored@geneList, original@geneList)
-  expect_equal(restored@result, original@result)
+  expect_equal(as.list(restored@result), as.list(original@result))
+  expect_identical(rownames(restored@result), restored@result$ID)
 })
 
 test_that("empty results and readable identifiers round-trip", {
@@ -119,6 +120,8 @@ test_that("GSEApy MEA uses the same native GSEA JSON structure", {
   expect_equal(restored@params$exponent, 1.5)
   expect_equal(names(restored@geneList), paste0("g", seq_len(16L)))
   expect_setequal(names(restored@geneSets), c("positive", "negative"))
+  expect_identical(names(DOSE::geneInCategory(restored)), restored@result$ID)
+  expect_s3_class(enrichplot::ridgeplot(restored, showCategory = 2), "ggplot")
 
   for (id in restored@result$ID) {
     reproduced <- expected_gsea_trace(

@@ -32,6 +32,12 @@ restore_gsea_result <- function(native, gene_pool, rank_list) {
   attr(result, "row.names") <- methods::as(
     unlist(native$result$row_names, use.names = FALSE), native$result$row_name_type
   )
+  # DOSE::geneInCategory.gseaResult uses these names as term IDs. Data frames
+  # produced outside clusterProfiler often have automatic integer row names;
+  # keeping those on the temporary object breaks enrichplot::ridgeplot().
+  if (nrow(result) && "ID" %in% names(result)) {
+    rownames(result) <- result$ID
+  }
   pool <- gene_pool[order(vapply(gene_pool, function(hit) hit$rank, numeric(1)))]
   ids <- vapply(pool, function(hit) hit$input_label, character(1))
   ranks <- vapply(rank_list$entries[ids], as.numeric, numeric(1))

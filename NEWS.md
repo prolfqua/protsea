@@ -1,5 +1,6 @@
 # protsea 0.1.0
 
+- Reconstruct transient GSEA result tables with term IDs as row names, including MEA documents whose source tables have automatic row names, so ridge plots resolve gene sets correctly. The JSON retains its source row names.
 - Add a separate PTM enrichment QMD for one analysis document containing PTM-SEA, Kinase GSEA, and MEA. The report reconstructs every plot from the shared JSON and uses 96 DPI without retina scaling to keep its self-contained HTML compact.
 - Store per-term source running enrichment scores and one-based hit positions
   in the shared native GSEA block, including documents produced by GSEApy MEA,
