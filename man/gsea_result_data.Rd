@@ -7,7 +7,7 @@
 gsea_result_data(results, category, method = "fgsea")
 }
 \arguments{
-\item{results}{Named list of \link[DOSE:gseaResult-class]{DOSE::gseaResult} objects, one per contrast.}
+\item{results}{Named list of \code{gseaResult} objects, one per contrast.}
 
 \item{category}{Gene-set collection name.}
 

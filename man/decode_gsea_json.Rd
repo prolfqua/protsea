@@ -11,7 +11,7 @@ decode_gsea_json(json)
 }
 \value{
 Named nested list, indexed by contrast and category, of
-\link[DOSE:gseaResult-class]{DOSE::gseaResult} objects.
+\code{gseaResult} objects.
 }
 \description{
 Decodes a JSON string (including a string read from MuData \code{uns}) or a file

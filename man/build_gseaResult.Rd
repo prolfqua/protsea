@@ -15,10 +15,10 @@ contrast, terms).}
 \item{rank_list}{Named list from rank_lists for this contrast.}
 }
 \value{
-A \link[DOSE:gseaResult-class]{DOSE::gseaResult} object.
+A \code{gseaResult} object.
 }
 \description{
-Constructs a \link[DOSE:gseaResult-class]{DOSE::gseaResult} suitable for \code{enrichplot::ridgeplot()}
+Constructs a \code{gseaResult} suitable for \code{enrichplot::ridgeplot()}
 and other GSEA-specific visualisations. Native \code{gsea_result} extensions
 restore the original statistics. STRING-only results have missing ES/NES
 and p-values; their ridgeplot is a descriptive view of mapped members.  The ranked gene list is taken from

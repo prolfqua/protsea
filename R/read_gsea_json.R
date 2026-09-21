@@ -2,11 +2,11 @@
 #'
 #' Reads a JSON file produced by the string-gsea Python pipeline
 #' (`GSEAResult.to_json()`) and constructs one
-#' [DOSE::enrichResult-class] object per contrast-category combination.
+#' `enrichResult` object per contrast-category combination.
 #'
 #' @param json_path Path to the JSON file.
 #' @return A double-nested named list: `result[["contrast"]][["category"]]`,
-#'   where each leaf is an [DOSE::enrichResult-class] object.
+#'   where each leaf is an `enrichResult` object.
 #' @export
 #' @examples
 #' \dontrun{

@@ -133,7 +133,7 @@ test_that("GSEApy MEA uses the same native GSEA JSON structure", {
   expect_equal(restored@params$exponent, 1.5)
   expect_equal(names(restored@geneList), paste0("g", seq_len(16L)))
   expect_setequal(names(restored@geneSets), c("positive", "negative"))
-  expect_identical(names(DOSE::geneInCategory(restored)), restored@result$ID)
+  expect_identical(names(gene_in_category(restored)), restored@result$ID)
   expect_s3_class(enrichplot::ridgeplot(restored, showCategory = 2), "ggplot")
 
   for (id in restored@result$ID) {

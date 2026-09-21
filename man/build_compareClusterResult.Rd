@@ -7,15 +7,15 @@
 build_compareClusterResult(result_list)
 }
 \arguments{
-\item{result_list}{Named list of \link[DOSE:enrichResult-class]{DOSE::enrichResult} objects,
+\item{result_list}{Named list of \code{enrichResult} objects,
 one per contrast. Names are used as cluster labels.}
 }
 \value{
-A \link[DOSE:compareClusterResult-class]{DOSE::compareClusterResult} object.
+A \code{compareClusterResult} object.
 }
 \description{
 Merges \code{enrichResult} objects across contrasts (for a single category)
-into a \link[DOSE:compareClusterResult-class]{DOSE::compareClusterResult} object. This enables
+into a \code{compareClusterResult} object. This enables
 cross-contrast comparison plots from enrichplot (e.g., \code{dotplot()},
 \code{emapplot()}).
 }

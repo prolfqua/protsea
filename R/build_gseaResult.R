@@ -1,6 +1,6 @@
 #' Build a gseaResult S4 object from one category's JSON data
 #'
-#' Constructs a [DOSE::gseaResult-class] suitable for `enrichplot::ridgeplot()`
+#' Constructs a `gseaResult` suitable for `enrichplot::ridgeplot()`
 #' and other GSEA-specific visualisations. Native `gsea_result` extensions
 #' restore the original statistics. STRING-only results have missing ES/NES
 #' and p-values; their ridgeplot is a descriptive view of mapped members.  The ranked gene list is taken from
@@ -10,7 +10,7 @@
 #'   contrast, terms).
 #' @param gene_pool Named list from the JSON gene_pool for this contrast.
 #' @param rank_list Named list from rank_lists for this contrast.
-#' @return A [DOSE::gseaResult-class] object.
+#' @return A `gseaResult` object.
 #' @importFrom methods new
 #' @export
 build_gseaResult <- function(category_data, gene_pool, rank_list) {

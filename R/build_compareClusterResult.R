@@ -1,13 +1,13 @@
 #' Build a compareClusterResult from multiple contrasts
 #'
 #' Merges `enrichResult` objects across contrasts (for a single category)
-#' into a [DOSE::compareClusterResult-class] object. This enables
+#' into a `compareClusterResult` object. This enables
 #' cross-contrast comparison plots from enrichplot (e.g., `dotplot()`,
 #' `emapplot()`).
 #'
-#' @param result_list Named list of [DOSE::enrichResult-class] objects,
+#' @param result_list Named list of `enrichResult` objects,
 #'   one per contrast. Names are used as cluster labels.
-#' @return A [DOSE::compareClusterResult-class] object.
+#' @return A `compareClusterResult` object.
 #' @importFrom methods new slot
 #' @export
 #' @examples

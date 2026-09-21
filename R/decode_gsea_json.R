@@ -6,7 +6,7 @@
 #'
 #' @param json JSON text or a JSON file path.
 #' @return Named nested list, indexed by contrast and category, of
-#'   [DOSE::gseaResult-class] objects.
+#'   `gseaResult` objects.
 #' @export
 decode_gsea_json <- function(json) {
   document <- jsonlite::fromJSON(json, simplifyVector = FALSE)

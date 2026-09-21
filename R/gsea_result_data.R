@@ -54,7 +54,7 @@
 #' Identifiers are retained exactly as submitted; no biological ID mapping is
 #' performed. Permutation matrices are not stored.
 #'
-#' @param results Named list of [DOSE::gseaResult-class] objects, one per contrast.
+#' @param results Named list of `gseaResult` objects, one per contrast.
 #' @param category Gene-set collection name.
 #' @param method Algorithm label, e.g. `"fgsea"` or `"DOSE"`.
 #' @return A list with `data` and `rank_lists`, suitable for MuData `uns` or

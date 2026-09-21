@@ -16,7 +16,7 @@ category, contrast, terms).}
 (has fields: contrast, entries).}
 }
 \value{
-An \link[DOSE:enrichResult-class]{DOSE::enrichResult} object.
+An \code{enrichResult} object.
 }
 \description{
 Build an enrichResult S4 object from one category's JSON data

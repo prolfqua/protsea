@@ -27,7 +27,7 @@ resolve_gene_ids <- function(gene_ids, gene_pool) {
 #' @param gene_pool Named list from the JSON gene_pool for this contrast.
 #' @param rank_list Named list from rank_lists for this contrast
 #'   (has fields: contrast, entries).
-#' @return An [DOSE::enrichResult-class] object.
+#' @return An `enrichResult` object.
 #' @import DOSE
 #' @importFrom methods new
 #' @export

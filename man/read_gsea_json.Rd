@@ -11,12 +11,12 @@ read_gsea_json(json_path)
 }
 \value{
 A double-nested named list: \code{result[["contrast"]][["category"]]},
-where each leaf is an \link[DOSE:enrichResult-class]{DOSE::enrichResult} object.
+where each leaf is an \code{enrichResult} object.
 }
 \description{
 Reads a JSON file produced by the string-gsea Python pipeline
 (\code{GSEAResult.to_json()}) and constructs one
-\link[DOSE:enrichResult-class]{DOSE::enrichResult} object per contrast-category combination.
+\code{enrichResult} object per contrast-category combination.
 }
 \examples{
 \dontrun{

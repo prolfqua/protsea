@@ -1,5 +1,7 @@
 # protsea 0.1.0
 
+- Work with DOSE 4.6, which moved the enrichment classes and `geneInCategory()` into the `enrichit` package. The documentation no longer links to class help pages that the split relocated, and the tests resolve the accessor from whichever package provides it, so protsea runs on both the old and the new stack.
+
 - Reconstruct transient GSEA result tables with term IDs as row names, including MEA documents whose source tables have automatic row names, so ridge plots resolve gene sets correctly. The JSON retains its source row names.
 - Add a separate PTM enrichment QMD for one analysis document containing PTM-SEA, Kinase GSEA, and MEA. The report reconstructs every plot from the shared JSON and uses 96 DPI without retina scaling to keep its self-contained HTML compact.
 - Store per-term source running enrichment scores and one-based hit positions
