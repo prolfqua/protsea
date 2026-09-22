@@ -128,13 +128,62 @@ gsea_result_data <- function(results, category, method = "fgsea") {
   list(data = data, rank_lists = rank_lists)
 }
 
+#' Open a GSEA JSON File, Compressed When It Is Named `.gz`
+#'
+#' The name states the storage: these documents carry every ranked item of every
+#' term and reach hundreds of megabytes, so they are normally kept gzipped.
+#'
+#' @param path File path.
+#' @param mode Connection mode, `"wb"` or `"rb"`.
+#' @return An open connection.
+#' @keywords internal
+gsea_json_connection <- function(path, mode) {
+  if (grepl("\\.gz$", path)) gzfile(path, mode) else file(path, mode)
+}
+
+#' Serialize a GSEAResult Structure to One JSON String
+#'
+#' @param gsea_result A list with `data` and `rank_lists`.
+#' @return One JSON string.
+#' @export
+gsea_result_json_text <- function(gsea_result) {
+  as.character(jsonlite::toJSON(gsea_result, auto_unbox = TRUE, digits = NA, na = "null"))
+}
+
 #' Write Shared GSEA Data to JSON
 #'
 #' @param gsea_result Data returned by [gsea_result_data()].
-#' @param path Output JSON file.
+#' @param path Output JSON file; a `.gz` name is written gzipped.
 #' @return `path`, invisibly.
 #' @export
 write_gsea_result_json <- function(gsea_result, path) {
-  jsonlite::write_json(gsea_result, path, auto_unbox = TRUE, digits = NA, na = "null")
+  write_gsea_json_text(gsea_result_json_text(gsea_result), path)
+}
+
+#' Write an Already Serialized GSEA JSON Document
+#'
+#' Keeps the document byte for byte, which the MEA documents depend on: their
+#' JSON is the native string_gsea output with one object spliced in, and
+#' re-serializing it would not reproduce the same bytes.
+#'
+#' @param json One JSON string.
+#' @param path Output file; a `.gz` name is written gzipped.
+#' @return `path`, invisibly.
+#' @export
+write_gsea_json_text <- function(json, path) {
+  connection <- gsea_json_connection(path, "wb")
+  on.exit(close(connection), add = TRUE)
+  writeLines(json, connection)
   invisible(path)
+}
+
+#' Read a GSEA JSON Document as Text
+#'
+#' @param path Input file; a `.gz` name is read gzipped.
+#' @return The document as one JSON string.
+#' @export
+read_gsea_json_text <- function(path) {
+  connection <- gsea_json_connection(path, "rb")
+  on.exit(close(connection), add = TRUE)
+  paste(readLines(connection, warn = FALSE), collapse = "\n")
 }

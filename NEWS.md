@@ -1,5 +1,7 @@
 # protsea 0.1.0
 
+- Own how a GSEAResult document reaches disk, not only its structure. `write_gsea_result_json()` and the new `write_gsea_json_text()` / `read_gsea_json_text()` write and read a document gzipped whenever the path ends in `.gz`, and `read_gsea_json()` follows, so a `.json.gz` opens with any gzip reader. The text pair keeps a document byte for byte, which matters for documents assembled by splicing rather than by re-serializing.
+
 - Work with DOSE 4.6, which moved the enrichment classes and `geneInCategory()` into the `enrichit` package. The documentation no longer links to class help pages that the split relocated, and the tests resolve the accessor from whichever package provides it, so protsea runs on both the old and the new stack.
 
 - Reconstruct transient GSEA result tables with term IDs as row names, including MEA documents whose source tables have automatic row names, so ridge plots resolve gene sets correctly. The JSON retains its source row names.

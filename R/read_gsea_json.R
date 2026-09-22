@@ -16,7 +16,7 @@
 #' enrichplot::dotplot(results[[1]][["SMART"]])
 #' }
 read_gsea_json <- function(json_path) {
-  json_data <- jsonlite::fromJSON(json_path, simplifyVector = FALSE)
+  json_data <- jsonlite::fromJSON(read_gsea_json_text(json_path), simplifyVector = FALSE)
 
   # Validate required top-level keys
   required_keys <- c("data", "rank_lists")

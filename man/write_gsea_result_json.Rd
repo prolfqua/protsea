@@ -9,7 +9,7 @@ write_gsea_result_json(gsea_result, path)
 \arguments{
 \item{gsea_result}{Data returned by \code{\link[=gsea_result_data]{gsea_result_data()}}.}
 
-\item{path}{Output JSON file.}
+\item{path}{Output JSON file; a \code{.gz} name is written gzipped.}
 }
 \value{
 \code{path}, invisibly.
