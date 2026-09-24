@@ -45,7 +45,7 @@ ul.task-list li input[type="checkbox"] {
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-3f2496242c16263c0d5ed257b2b27fab.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-d76b89148f2051d413c67903796ad183.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -192,6 +192,18 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./man/gsea_result_json_text.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">gsea_result_json_text</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./man/read_gsea_json_text.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">read_gsea_json_text</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./man/read_gsea_json.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">read_gsea_json</span></a>
   </div>
@@ -200,6 +212,12 @@ ul.task-list li input[type="checkbox"] {
   <div class="sidebar-item-container"> 
   <a href="./man/render_gsea_reports.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">render_gsea_reports</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./man/write_gsea_json_text.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">write_gsea_json_text</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -237,6 +255,7 @@ ul.task-list li input[type="checkbox"] {
 <section id="protsea-0.1.0" class="level1">
 <h1>protsea 0.1.0</h1>
 <ul>
+<li><p>Own how a GSEAResult document reaches disk, not only its structure. <code>write_gsea_result_json()</code> and the new <code>write_gsea_json_text()</code> / <code>read_gsea_json_text()</code> write and read a document gzipped whenever the path ends in <code>.gz</code>, and <code>read_gsea_json()</code> follows, so a <code>.json.gz</code> opens with any gzip reader. The text pair keeps a document byte for byte, which matters for documents assembled by splicing rather than by re-serializing.</p></li>
 <li><p>Work with DOSE 4.6, which moved the enrichment classes and <code>geneInCategory()</code> into the <code>enrichit</code> package. The documentation no longer links to class help pages that the split relocated, and the tests resolve the accessor from whichever package provides it, so protsea runs on both the old and the new stack.</p></li>
 <li><p>Reconstruct transient GSEA result tables with term IDs as row names, including MEA documents whose source tables have automatic row names, so ridge plots resolve gene sets correctly. The JSON retains its source row names.</p></li>
 <li><p>Add a separate PTM enrichment QMD for one analysis document containing PTM-SEA, Kinase GSEA, and MEA. The report reconstructs every plot from the shared JSON and uses 96 DPI without retina scaling to keep its self-contained HTML compact.</p></li>
