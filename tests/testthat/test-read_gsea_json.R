@@ -79,3 +79,13 @@ test_that("all contrasts and categories are present", {
     expect_true(length(results[[contrast_name]]) > 1, info = paste("Contrast", contrast_name, "has too few categories"))
   }
 })
+
+test_that("STRING enrichResult terms are ordered by significance", {
+  json_path <- get_test_json()
+  skip_if_not(nzchar(json_path), "JSON test data not available")
+  for (contrast in read_gsea_json(json_path)) {
+    for (category in contrast) {
+      expect_false(is.unsorted(category@result$p.adjust))
+    }
+  }
+})

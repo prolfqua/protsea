@@ -57,6 +57,7 @@ build_gseaResult <- function(category_data, gene_pool, rank_list) {
 
   result_df <- do.call(rbind, rows)
   rownames(result_df) <- result_df$ID
+  result_df <- order_gsea_result(result_df)
 
   gene_sets <- lapply(terms, function(term) {
     resolve_gene_ids(unlist(term[["gene_ids"]]), gene_pool)

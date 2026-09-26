@@ -38,6 +38,7 @@ restore_gsea_result <- function(native, gene_pool, rank_list) {
   if (nrow(result) && "ID" %in% names(result)) {
     rownames(result) <- result$ID
   }
+  result <- order_gsea_result(result)
   pool <- gene_pool[order(vapply(gene_pool, function(hit) hit$rank, numeric(1)))]
   ids <- vapply(pool, function(hit) hit$input_label, character(1))
   ranks <- vapply(rank_list$entries[ids], as.numeric, numeric(1))

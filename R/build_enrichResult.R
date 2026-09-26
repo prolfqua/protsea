@@ -62,6 +62,7 @@ build_enrichResult <- function(category_data, gene_pool, rank_list) {
   })
   result_df <- do.call(rbind, rows)
   rownames(result_df) <- result_df$ID
+  result_df <- order_enrich_result(result_df)
 
   # Build @geneSets: named list of term_id -> character vector of labels
   gene_sets <- lapply(terms, function(term) {

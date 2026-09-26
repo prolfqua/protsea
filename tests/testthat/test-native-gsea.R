@@ -154,3 +154,30 @@ test_that("GSEApy MEA uses the same native GSEA JSON structure", {
   }
   expect_silent(enrichplot::gseaplot2(restored, geneSetID = 1L))
 })
+
+test_that("decoded native results are in clusterProfiler order whatever the document order", {
+  original <- native_gsea()
+  doc <- gsea_result_data(list(A_vs_B = original), "PTMSEA")
+  native <- doc$data$A_vs_B$categories$PTMSEA$gsea_result
+  reversed <- rev(seq_along(native$result$columns$ID))
+  native$result$columns <- lapply(native$result$columns, function(x) x[reversed])
+  native$result$row_names <- native$result$row_names[reversed]
+  doc$data$A_vs_B$categories$PTMSEA$gsea_result <- native
+  json <- jsonlite::toJSON(doc, auto_unbox = TRUE, digits = NA, na = "null")
+  restored <- decode_gsea_json(json)$A_vs_B$PTMSEA
+  expect_equal(restored@result, original@result)
+})
+
+test_that("GSEA order is adjusted p-value then absolute NES, missing values last", {
+  result <- data.frame(
+    ID = c("na", "weak", "strong", "best"),
+    p.adjust = c(NA, 0.05, 0.05, 0.01),
+    NES = c(2, 1.2, -1.8, 1.1)
+  )
+  expect_equal(order_gsea_result(result)$ID, c("best", "strong", "weak", "na"))
+})
+
+test_that("over-representation order is p-value, missing values last", {
+  result <- data.frame(ID = c("c", "a", "b"), pvalue = c(NA, 0.01, 0.001), p.adjust = c(0.2, 0.02, 0.01))
+  expect_equal(order_enrich_result(result)$ID, c("b", "a", "c"))
+})
