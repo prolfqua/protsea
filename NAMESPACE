@@ -12,5 +12,7 @@ export(render_gsea_reports)
 export(write_gsea_json_text)
 export(write_gsea_result_json)
 import(DOSE)
-importFrom(methods,new)
-importFrom(methods,slot)
+importFrom(methods,
+  new,
+  slot
+)
