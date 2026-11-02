@@ -1,5 +1,7 @@
 # protsea 0.1.0
 
+- The GSEA round-trip vignette builds again with clusterProfiler 4.20 (Bioconductor 3.23). That release removed the `by` argument of `GSEA()`, so the vignette no longer passes `by = "fgsea"`.
+
 - Every decoded result is put into the order clusterProfiler returns: GSEA results by adjusted p-value then descending absolute NES, over-representation results by p-value. enrichplot's `dotplot()` and the other `showCategory` views take the first rows, so a document written in another order, such as gseapy-based MEA in kinase-name order or a STRING table, showed arbitrary terms instead of the most significant ones.
 
 - Own how a GSEAResult document reaches disk, not only its structure. `write_gsea_result_json()` and the new `write_gsea_json_text()` / `read_gsea_json_text()` write and read a document gzipped whenever the path ends in `.gz`, and `read_gsea_json()` follows, so a `.json.gz` opens with any gzip reader. The text pair keeps a document byte for byte, which matters for documents assembled by splicing rather than by re-serializing.

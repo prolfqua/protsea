@@ -38,7 +38,7 @@ term2name <- data.frame(
 
 ## Run clusterProfiler with fgsea
 
-`by = "fgsea"` selects the fgsea backend. The non-default exponent is useful here because the round trip must retain the weighting parameter used to reconstruct the running enrichment score.
+The non-default exponent is useful here because the round trip must retain the weighting parameter used to reconstruct the running enrichment score.
 
 ```{r}
 #| label: run-gsea
@@ -52,7 +52,6 @@ native <- clusterProfiler::GSEA(
   pvalueCutoff = 1,
   TERM2GENE = term2gene,
   TERM2NAME = term2name,
-  by = "fgsea",
   seed = TRUE,
   verbose = FALSE
 )
